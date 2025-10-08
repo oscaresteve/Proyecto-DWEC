@@ -1,16 +1,21 @@
 import Tile from "./tile.js";
 
 export default class Grid {
-  constructor(boardElement, size = 8) {
+  constructor(gameBoard, size = 4) {
     this.size = size;
+
+    //Array bidimensional lleno de nulls
     this.cells = Array(size)
       .fill()
       .map(() => Array(size).fill(null));
 
-    this.boardElement = boardElement;
-    this.boardElement.style.setProperty("--size", size);
+    this.gameBoard = gameBoard;
+
+    //Pasar el tamaño del tablero a los estilos
+    this.gameBoard.style.setProperty("--size", size);
   }
 
+  //Devuelve un array con las posiciones de las celdas vacias
   getEmptyCells() {
     const empty = [];
     for (let r = 0; r < this.size; r++) {
@@ -21,36 +26,53 @@ export default class Grid {
     return empty;
   }
 
+  //Añade un tile aleatoriamente en una celda vacia
   addRandomTile() {
     const empty = this.getEmptyCells();
     if (!empty.length) return;
 
     const { r, c } = empty[Math.floor(Math.random() * empty.length)];
+
+    //Se calcula el valor del tile con probabilidades, 2 o 4
     const value = Math.random() < 0.9 ? 2 : 4;
+
+    //Se crea el tile y se añade a la celda
     this.cells[r][c] = new Tile(value);
   }
 
+  //Actualiza el DOM para que se muestren los cambios
   updateDOM() {
-    this.boardElement.innerHTML = "";
+    //Se limpia el HTML
+    this.gameBoard.innerHTML = "";
+
     this.cells.forEach((row, r) => {
       row.forEach((tile, c) => {
+
+        //Se crea un elemento div para cada celda y se le añade la clase tile
         const tileDiv = document.createElement("div");
         tileDiv.className = "tile";
+
+        //Si la celda contiene un tile, se le añade valor y se le añade otra clase corresponidente
         if (tile) {
           tileDiv.textContent = tile.value;
           tileDiv.classList.add(`tile-${tile.value}`);
         }
-        this.boardElement.appendChild(tileDiv);
+        this.gameBoard.appendChild(tileDiv);
       });
     });
   }
 
   move(direction) {
+    //Estado inicial del tablero en JSON
     const prev = JSON.stringify(this.cells);
+
+    //Array bidimensional lleno de false
+    //Se usa para no combinar dos veces un tile
     const merged = Array(this.size)
       .fill()
       .map(() => Array(this.size).fill(false));
 
+    //
     const dir = {
       ArrowUp: { r: -1, c: 0 },
       ArrowDown: { r: 1, c: 0 },
