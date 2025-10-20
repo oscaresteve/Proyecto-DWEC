@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const app = document.getElementById("app");
 
   const router = new Router(app);
-  router.load(location.hash || "#menu");
+  router.load(location.hash || "#login");
 
   //Listener para el router
   window.addEventListener("hashchange", () => {
