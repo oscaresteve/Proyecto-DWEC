@@ -1,7 +1,7 @@
 import Tile from "./tile.js";
 
 export default class Grid {
-  constructor(gameBoard, size = 4) {
+  constructor(gameBoard, size = 5) {
     this.size = size;
 
     //Array bidimensional lleno de nulls
@@ -26,6 +26,19 @@ export default class Grid {
     return empty;
   }
 
+  //Calcula la puntuacion del juego
+  getScore() {
+    let score = 0;
+
+    for (let r = 0; r < this.size; r++) {
+      for (let c = 0; c < this.size; c++) {
+        const tile = this.cells[r][c];
+        if (tile) score += tile.value;
+      }
+    }
+    return score;
+  }
+
   //Añade un tile aleatoriamente en una celda vacia
   addRandomTile() {
     const empty = this.getEmptyCells();
@@ -47,7 +60,6 @@ export default class Grid {
 
     this.cells.forEach((row, r) => {
       row.forEach((tile, c) => {
-
         //Se crea un elemento div para cada celda y se le añade la clase tile
         const tileDiv = document.createElement("div");
         tileDiv.className = "tile";
@@ -60,6 +72,11 @@ export default class Grid {
         this.gameBoard.appendChild(tileDiv);
       });
     });
+
+    //Se actualiza la puntuacion
+    const scoreElement = document.getElementById("score");
+    scoreElement.textContent = this.getScore();
+    
   }
 
   move(direction) {
@@ -72,7 +89,6 @@ export default class Grid {
       .fill()
       .map(() => Array(this.size).fill(false));
 
-    //
     const dir = {
       ArrowUp: { r: -1, c: 0 },
       ArrowDown: { r: 1, c: 0 },
