@@ -1,18 +1,14 @@
-import Game from "./components/game.js";
+import Router from "./router.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  //se obtiene el elemto gameBoard y se le pasa al Game, luego se inicia el juego
+  //Contenedor de la app
+  const app = document.getElementById("app");
 
-  const gameBoard = document.getElementById("game-board");
-  const game = new Game(gameBoard);
-  game.start();
+  const router = new Router(app);
+  router.load(location.hash || "#menu");
 
-  //Listener para el movimiento, que llama a la funcion de Game
-
-  window.addEventListener("keydown", (e) => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-      e.preventDefault();
-      game.handleInput(e.key);
-    }
+  //Listener para el router
+  window.addEventListener("hashchange", () => {
+    router.load(location.hash);
   });
 });
