@@ -1,8 +1,21 @@
-// loginPage.js
+import { signIn } from "../db/supabaseService.js";
+
 export default class LoginPage {
   constructor(container, router) {
     this.container = container;
     this.router = router;
+  }
+
+  async logIn(email, password) {
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        alert(error);
+      } else {
+        alert("Login successful!");
+        this.router.navigate("game");
+      }
+    } catch (error) {}
   }
 
   render() {
@@ -52,11 +65,7 @@ export default class LoginPage {
     // Agregar evento submit
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const email = emailInput.value;
-      const password = passwordInput.value;
-      console.log("Login attempt:", { email, password });
-      alert(`Email: ${email}\nPassword: ${password}`);
-      this.router.navigate("game");
+      this.logIn(emailInput.value, passwordInput.value);
     });
 
     // Append al contenedor
