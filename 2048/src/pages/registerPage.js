@@ -1,23 +1,21 @@
-import { signIn } from "../db/supabaseService.js";
+import { signUp } from "../db/supabaseService.js";
 
-export default class LoginPage {
+export default class RegisterPage {
   constructor(container, router) {
     this.container = container;
     this.router = router;
   }
 
-  async login(email, password) {
+  async register(email, password) {
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signUp(email, password);
       if (error) {
         alert(error);
       } else {
-        alert("Login successful!");
+        alert("Register successful!");
         this.router.navigate("game");
       }
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (error) {}
   }
 
   render() {
@@ -28,13 +26,14 @@ export default class LoginPage {
     const wrapper = document.createElement("div");
     wrapper.className =
       "d-flex justify-content-center align-items-center bg-light";
+
     // Tarjeta
     const card = document.createElement("div");
     card.className = "card shadow-lg p-4";
 
     // Título
     const title = document.createElement("h2");
-    title.textContent = "Login";
+    title.textContent = "Register";
     title.className = "text-center mb-4";
     card.appendChild(title);
 
@@ -67,29 +66,30 @@ export default class LoginPage {
     // Botón de submit
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
+    submitButton.textContent = "Register";
     submitButton.className = "btn btn-primary w-100 mt-3";
-    submitButton.textContent = "Login";
 
     // Evento submit
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      this.login(emailInput.value, passwordInput.value);
+      this.register(emailInput.value, passwordInput.value);
     });
 
+    // Append al contenedor
     form.append(emailGroup, passwordGroup, submitButton);
     card.appendChild(form);
 
-    // Botón para ir a Register
-    const registerButton = document.createElement("button");
-    registerButton.type = "button";
-    registerButton.className = "btn btn-link mt-2 w-100";
-    registerButton.textContent = "Go to Register";
-    registerButton.addEventListener("click", () => {
-      this.router.navigate("register");
+    //Boton para ir al login
+    const loginButton = document.createElement("button");
+    loginButton.textContent = "Go to Login";
+    loginButton.className = "btn btn-link mt-2 w-100";
+    loginButton.type = "button";
+    loginButton.addEventListener("click", (e) => {
+      this.router.navigate("login");
     });
-    card.appendChild(registerButton);
+    card.appendChild(loginButton);
 
-    // Añadir todo al contenedor
+        // Añadir todo al contenedor
     wrapper.appendChild(card);
     this.container.appendChild(wrapper);
   }

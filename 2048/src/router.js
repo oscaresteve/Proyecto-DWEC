@@ -1,6 +1,7 @@
 import GamePage from "./pages/gamePage.js";
 import MenuPage from "./pages/menuPage.js";
 import LoginPage from "./pages/loginPage.js";
+import RegisterPage from "./pages/registerPage.js";
 
 export default class Router {
   constructor(container) {
@@ -11,6 +12,7 @@ export default class Router {
       ["#game", GamePage],
       ["#login", LoginPage],
       ["#menu", MenuPage],
+      ["#register", RegisterPage]
     ]);
   }
 
