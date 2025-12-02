@@ -1,4 +1,5 @@
 import { signIn } from "../db/supabaseService.js";
+import { setUser, setError, setView, setLoading } from "../state/store.js";
 
 export default class LoginPage {
   constructor(container, router) {
@@ -8,15 +9,26 @@ export default class LoginPage {
 
   async login(email, password) {
     try {
-      const { error } = await signIn(email, password);
+      setLoading(true);
+
+      const { error, user, session } = await signIn(email, password);
+
       if (error) {
-        alert(error);
-      } else {
-        alert("Login successful!");
-        this.router.navigate("game");
+        setError(error.message || "Error al iniciar sesión");
+        return;
       }
+
+      // Guardar user en el estado
+      setUser(user || session?.user);
+      setError(null);
+
+      setView("game");
+      this.router.navigate("game");
     } catch (error) {
       console.error(error);
+      setError("Error inesperado");
+    } finally {
+      setLoading(false);
     }
   }
 
