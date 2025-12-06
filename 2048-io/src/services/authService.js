@@ -1,0 +1,55 @@
+import { setState } from './stateService.js';
+
+const SUPABASE_URL = 'https://ypfxbsnqfpdkwzrhmkoa.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZnhic25xZnBka3d6cmhta29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTc0MTgsImV4cCI6MjA3NjA5MzQxOH0.ZhyDd2DzaJTR_2lE7T361rwiubFLG7dV0QiJzu6Ie8w';
+
+async function fetchSupabase(endpoint, body) {
+  try {
+    const response = await fetch(`${SUPABASE_URL}${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+  
+    return data;
+  } catch (error) {
+    console.error("Supabase error:", error);
+    throw error;
+  }
+}
+
+export async function login(email, password) {
+  try {
+    const data = await fetchSupabase("/auth/v1/token?grant_type=password", { email, password });
+
+    if (data.access_token) {
+      setState({ user: { email, token: data.access_token }, route: 'home' });
+    } else {
+      alert('Login failed: no access token received');
+    }
+  } catch (error) {
+    alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
+  }
+}
+
+export async function register(email, password) {
+  try {
+    const data = await fetchSupabase("/auth/v1/signup", { email, password });
+
+    if (data.user) {
+      alert("Registration successful! You can now log in.");
+    } else {
+      alert("Registration failed.");
+    }
+
+    return data;
+  } catch (error) {
+    alert(`Registration failed: ${error?.error || JSON.stringify(error)}`);
+  }
+}
