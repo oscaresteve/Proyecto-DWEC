@@ -1,5 +1,6 @@
 import { setState, state$ } from "../services/stateService.js";
 import { createGameState, applyMove, isGameOver } from "../components/game.js";
+import { saveGameMove } from "../services/gameService.js";
 
 // evitar subscripciones y listeners duplicados
 let gameSubscription = null;
@@ -38,6 +39,8 @@ export function renderGameView(root) {
 
       gameOver = isGameOver(game);
       renderGameOverButton();
+
+      saveGameMove(game);
     });
   }
 
