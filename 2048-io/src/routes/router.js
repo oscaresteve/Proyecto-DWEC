@@ -1,22 +1,22 @@
-import { state$, setState } from '../services/stateService.js';
+import { state$, setState } from "../services/stateService.js";
 
 export const router = {
   init() {
-    window.addEventListener('hashchange', () => {
-      const route = location.hash.replace('#', '') || 'login';
+    window.addEventListener("hashchange", () => {
+      const route = location.hash.replace("#", "") || "login";
 
       const user = state$.value.user;
 
-      const protectedRoutes = ['game'];
+      const protectedRoutes = ["game"];
       if (protectedRoutes.includes(route) && !user) {
-        route = 'login';
-        location.hash = '#login';
+        route = "login";
+        location.hash = "#login";
       }
 
       setState({ route });
     });
 
-    const route = location.hash.replace('#', '') || 'login';
+    const route = location.hash.replace("#", "") || "login";
     setState({ route });
-  }
+  },
 };

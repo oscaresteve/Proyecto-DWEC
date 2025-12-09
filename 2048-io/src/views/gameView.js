@@ -49,7 +49,10 @@ export function renderGameView(root) {
     keyListenerAdded = true;
 
     window.addEventListener("keydown", (e) => {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) && !gameOver) {
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
+        !gameOver
+      ) {
         e.preventDefault();
         const { game } = state$.value;
         const newGame = applyMove(game, e.key);
@@ -65,7 +68,8 @@ export function renderGameView(root) {
     if (gameOver) {
       const button = document.createElement("button");
       button.textContent = "Nueva Partida";
-      button.className = "mt-2 px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600";
+      button.className =
+        "mt-2 px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600";
       button.addEventListener("click", () => {
         setState({ game: createGameState(5) });
         gameOver = false;

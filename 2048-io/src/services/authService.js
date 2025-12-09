@@ -1,7 +1,8 @@
-import { setState, state$ } from './stateService.js';
+import { setState, state$ } from "./stateService.js";
 
-const SUPABASE_URL = 'https://ypfxbsnqfpdkwzrhmkoa.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZnhic25xZnBka3d6cmhta29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTc0MTgsImV4cCI6MjA3NjA5MzQxOH0.ZhyDd2DzaJTR_2lE7T361rwiubFLG7dV0QiJzu6Ie8w';
+const SUPABASE_URL = "https://ypfxbsnqfpdkwzrhmkoa.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZnhic25xZnBka3d6cmhta29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTc0MTgsImV4cCI6MjA3NjA5MzQxOH0.ZhyDd2DzaJTR_2lE7T361rwiubFLG7dV0QiJzu6Ie8w";
 
 async function fetchSupabase(endpoint, body) {
   try {
@@ -16,7 +17,7 @@ async function fetchSupabase(endpoint, body) {
     });
 
     const data = await response.json();
-  
+
     return data;
   } catch (error) {
     console.error("Supabase error:", error);
@@ -26,14 +27,17 @@ async function fetchSupabase(endpoint, body) {
 
 export async function login(email, password) {
   try {
-    const data = await fetchSupabase("/auth/v1/token?grant_type=password", { email, password });
+    const data = await fetchSupabase("/auth/v1/token?grant_type=password", {
+      email,
+      password,
+    });
 
     if (data.access_token) {
       await ensureUserExists(email, data.access_token);
-      setState({ user: { email, token: data.access_token }, route: 'game' });
+      setState({ user: { email, token: data.access_token }, route: "game" });
       console.log("State: ", state$._value);
     } else {
-      alert('Login failed: no access token received');
+      alert("Login failed: no access token received");
     }
   } catch (error) {
     alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
@@ -64,18 +68,17 @@ export async function ensureUserExists(email, token, nickname = "Player") {
         "Content-Type": "application/json",
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${token}`,
-        Prefer: "resolution=ignore-duplicates"
+        Prefer: "resolution=ignore-duplicates",
       },
       body: JSON.stringify({
         email,
         nickname,
         max_score: 0,
-        current_game: null
-      })
+        current_game: null,
+      }),
     });
     console.log(`Usuario asegurado en Supabase: ${email}`);
   } catch (err) {
     console.error("Error asegurando usuario:", err);
   }
 }
-

@@ -1,6 +1,8 @@
 // crear un grid
 export function createGrid(size = 5) {
-  return Array(size).fill().map(() => Array(size).fill(null));
+  return Array(size)
+    .fill()
+    .map(() => Array(size).fill(null));
 }
 
 // recoger las celdas vacias
@@ -22,7 +24,7 @@ export function addRandomTile(grid) {
   const { r, c } = empty[Math.floor(Math.random() * empty.length)];
   const value = Math.random() < 0.9 ? 2 : 4;
 
-  const newGrid = grid.map(row => row.slice());
+  const newGrid = grid.map((row) => row.slice());
   newGrid[r][c] = { value };
 
   return newGrid;
@@ -30,10 +32,10 @@ export function addRandomTile(grid) {
 
 // movimientos del grid
 const DIRS = {
-  ArrowUp:    { r: -1, c: 0 },
-  ArrowDown:  { r: 1, c: 0 },
-  ArrowLeft:  { r: 0, c: -1 },
-  ArrowRight: { r: 0, c: 1 }
+  ArrowUp: { r: -1, c: 0 },
+  ArrowDown: { r: 1, c: 0 },
+  ArrowLeft: { r: 0, c: -1 },
+  ArrowRight: { r: 0, c: 1 },
 };
 
 // mover en una direccion
@@ -43,8 +45,10 @@ export function moveGrid(grid, direction) {
 
   const size = grid.length;
 
-  const newGrid = grid.map(row => row.slice());
-  const merged = Array(size).fill().map(() => Array(size).fill(false));
+  const newGrid = grid.map((row) => row.slice());
+  const merged = Array(size)
+    .fill()
+    .map(() => Array(size).fill(false));
 
   const range = [...Array(size).keys()];
   if (dir.r === 1) range.reverse();
@@ -53,8 +57,8 @@ export function moveGrid(grid, direction) {
   let moved = false;
   let gained = 0;
 
-  range.forEach(r => {
-    range.forEach(c => {
+  range.forEach((r) => {
+    range.forEach((c) => {
       const tile = newGrid[r][c];
       if (!tile) return;
 

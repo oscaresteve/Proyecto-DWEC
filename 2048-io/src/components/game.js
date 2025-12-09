@@ -1,9 +1,4 @@
-import {
-  createGrid,
-  addRandomTile,
-  moveGrid,
-  canMove
-} from "./grid.js";
+import { createGrid, addRandomTile, moveGrid, canMove } from "./grid.js";
 
 // estado inicial del juego
 export function createGameState(size = 5) {
@@ -14,13 +9,17 @@ export function createGameState(size = 5) {
   return {
     size,
     score: 0,
-    grid
+    grid,
   };
 }
 
 // mover en una direccion
 export function applyMove(gameState, direction) {
-  const { moved, grid: movedGrid, gained } = moveGrid(gameState.grid, direction);
+  const {
+    moved,
+    grid: movedGrid,
+    gained,
+  } = moveGrid(gameState.grid, direction);
 
   if (!moved) return gameState;
 
@@ -30,7 +29,7 @@ export function applyMove(gameState, direction) {
   const newState = {
     ...gameState,
     grid: newGrid,
-    score: gameState.score + gained
+    score: gameState.score + gained,
   };
 
   return newState;

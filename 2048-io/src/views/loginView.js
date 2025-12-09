@@ -1,5 +1,5 @@
-import { login } from '../services/authService.js';
-import { setState } from '../services/stateService.js';
+import { login } from "../services/authService.js";
+import { setState } from "../services/stateService.js";
 
 export function renderLoginView(root) {
   root.innerHTML = `
@@ -20,17 +20,17 @@ export function renderLoginView(root) {
     </div>
   `;
 
-  const form = root.querySelector('#login-form');
-  const emailInput = root.querySelector('#email');
-  const passwordInput = root.querySelector('#password');
-  const registerLink = root.querySelector('#register-link');
+  const form = root.querySelector("#login-form");
+  const emailInput = root.querySelector("#email");
+  const passwordInput = root.querySelector("#password");
+  const registerLink = root.querySelector("#register-link");
 
-  form.addEventListener('submit', async e => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     await login(emailInput.value, passwordInput.value);
   });
 
-  registerLink.addEventListener('click', () => {
-    setState({ route: 'register' });
+  registerLink.addEventListener("click", () => {
+    setState({ route: "register" });
   });
 }
