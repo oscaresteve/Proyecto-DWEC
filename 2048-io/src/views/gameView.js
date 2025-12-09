@@ -1,9 +1,9 @@
-// views/gameView.js
 import { setState, state$ } from "../services/stateService.js";
 import { createGameState, applyMove, isGameOver } from "../components/game.js";
 
-let gameSubscription = null; // Para evitar múltiples suscripciones
-let keyListenerAdded = false; // Para evitar múltiples listeners
+// evitar subscripciones y listeners duplicados
+let gameSubscription = null;
+let keyListenerAdded = false;
 
 export function renderGameView(root) {
   root.innerHTML = `
@@ -15,32 +15,23 @@ export function renderGameView(root) {
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
 
-  // Inicializar estado del juego solo si no existe
+// crear game si no existe en el estado
   if (!state$.value.game) {
     setState({ game: createGameState(5) });
   }
 
-  // ------------------------
-  // Suscripción reactiva
-  // ------------------------
+// subscripcion para renderizar el board cuando hayan cambios en game
   if (!gameSubscription) {
     gameSubscription = state$.subscribe(({ game }) => {
       if (!game) return;
-
       renderBoard(gameBoard, game.grid);
       score.textContent = game.score;
     });
   }
 
-  // ------------------------
-  // Input de usuario (solo una vez)
-  // ------------------------
+// input del usuario
   if (!keyListenerAdded) {
     keyListenerAdded = true;
-
-    // Para que el div reciba eventos de teclado
-    root.tabIndex = 0;
-    root.focus();
 
     root.addEventListener("keydown", (e) => {
       const valid = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
@@ -50,9 +41,7 @@ export function renderGameView(root) {
       const newGame = applyMove(game, e.key);
 
       setState({ game: newGame });
-      console.log(newGame);
       
-
       if (isGameOver(newGame)) {
         alert("¡Juego terminado!");
       }
@@ -60,6 +49,7 @@ export function renderGameView(root) {
   }
 }
 
+// renderizado del grid
 function renderBoard(gameBoard, grid) {
   gameBoard.innerHTML = "";
 

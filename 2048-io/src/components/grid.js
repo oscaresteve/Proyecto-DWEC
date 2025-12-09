@@ -1,15 +1,9 @@
-// components/grid.js
-
-// ----------------------
-// Crear tablero inicial
-// ----------------------
+// crear un grid
 export function createGrid(size = 5) {
   return Array(size).fill().map(() => Array(size).fill(null));
 }
 
-// ----------------------
-// Celdas vacías
-// ----------------------
+// recoger las celdas vacias
 export function getEmptyCells(cells) {
   const empty = [];
   for (let r = 0; r < cells.length; r++) {
@@ -20,9 +14,7 @@ export function getEmptyCells(cells) {
   return empty;
 }
 
-// ----------------------
-// Añadir tile aleatorio
-// ----------------------
+// añadir un tile aleatoramente con valor 2 o 4
 export function addRandomTile(grid) {
   const empty = getEmptyCells(grid);
   if (!empty.length) return grid;
@@ -36,9 +28,7 @@ export function addRandomTile(grid) {
   return newGrid;
 }
 
-// ----------------------
-// Movimiento función pura
-// ----------------------
+// movimientos del grid
 const DIRS = {
   ArrowUp:    { r: -1, c: 0 },
   ArrowDown:  { r: 1, c: 0 },
@@ -46,6 +36,7 @@ const DIRS = {
   ArrowRight: { r: 0, c: 1 }
 };
 
+// mover en una direccion
 export function moveGrid(grid, direction) {
   const dir = DIRS[direction];
   if (!dir) return { moved: false, grid, gained: 0 };
@@ -100,9 +91,7 @@ export function moveGrid(grid, direction) {
   return { moved, grid: newGrid, gained };
 }
 
-// ----------------------
-// Comprobación de movimiento
-// ----------------------
+// comprobacion del moviemiento
 export function canMove(grid) {
   if (getEmptyCells(grid).length) return true;
 

@@ -1,4 +1,3 @@
-// components/game.js
 import {
   createGrid,
   addRandomTile,
@@ -6,9 +5,7 @@ import {
   canMove
 } from "./grid.js";
 
-// ----------------------------
-// Crear estado inicial del juego
-// ----------------------------
+// estado inicial del juego
 export function createGameState(size = 5) {
   let grid = createGrid(size);
   grid = addRandomTile(grid);
@@ -21,9 +18,7 @@ export function createGameState(size = 5) {
   };
 }
 
-// ----------------------------
-// Intentar mover
-// ----------------------------
+// mover en una direccion
 export function applyMove(gameState, direction) {
   const { moved, grid: movedGrid, gained } = moveGrid(gameState.grid, direction);
 
@@ -41,9 +36,7 @@ export function applyMove(gameState, direction) {
   return newState;
 }
 
-// ----------------------------
-// Comprobar game over
-// ----------------------------
+// comprobar si se pueden hacer mas movimientos
 export function isGameOver(gameState) {
   return !canMove(gameState.grid);
 }
