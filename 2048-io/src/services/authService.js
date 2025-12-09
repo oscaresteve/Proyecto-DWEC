@@ -1,4 +1,4 @@
-import { setState } from './stateService.js';
+import { setState, state$ } from './stateService.js';
 
 const SUPABASE_URL = 'https://ypfxbsnqfpdkwzrhmkoa.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwZnhic25xZnBka3d6cmhta29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTc0MTgsImV4cCI6MjA3NjA5MzQxOH0.ZhyDd2DzaJTR_2lE7T361rwiubFLG7dV0QiJzu6Ie8w';
@@ -30,6 +30,8 @@ export async function login(email, password) {
 
     if (data.access_token) {
       setState({ user: { email, token: data.access_token }, route: 'home' });
+      console.log("State: ", state$._value);
+      
     } else {
       alert('Login failed: no access token received');
     }

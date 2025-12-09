@@ -1,7 +1,7 @@
 import { register } from '../services/authService.js';
 import { setState } from '../services/stateService.js';
 
-export function renderRegister(root) {
+export function renderRegisterView(root) {
   root.innerHTML = `
     <div class="flex items-center justify-center h-screen bg-gray-100">
       <form id="register-form" class="bg-white p-8 rounded-lg shadow-md w-96 flex flex-col gap-4">

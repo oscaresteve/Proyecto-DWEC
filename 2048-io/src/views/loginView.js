@@ -1,7 +1,7 @@
 import { login } from '../services/authService.js';
 import { setState } from '../services/stateService.js';
 
-export function renderLogin(root) {
+export function renderLoginView(root) {
   root.innerHTML = `
     <div class="flex items-center justify-center h-screen bg-gray-100">
       <form id="login-form" class="bg-white p-8 rounded-lg shadow-md w-96 flex flex-col gap-4">

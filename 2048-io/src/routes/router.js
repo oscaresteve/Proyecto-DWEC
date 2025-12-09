@@ -8,7 +8,6 @@ export const router = {
       const user = state$.value.user;
 
       const protectedRoutes = ['home', 'game'];
-
       if (protectedRoutes.includes(route) && !user) {
         route = 'login';
         location.hash = '#login';
