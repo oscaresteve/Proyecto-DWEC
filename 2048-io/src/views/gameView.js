@@ -37,11 +37,10 @@ export function renderGameView(root) {
   if (!keyListenerAdded) {
     keyListenerAdded = true;
 
-    root.addEventListener("keydown", (e) => {
-      const valid = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-      if (!valid.includes(e.key)) return;
-
-      const { game } = state$.value;
+    window.addEventListener("keydown", (e) => {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        const { game } = state$.value;
       const newGame = applyMove(game, e.key);
 
       setState({ game: newGame });
@@ -49,21 +48,22 @@ export function renderGameView(root) {
       if (isGameOver(newGame)) {
         alert("¡Juego terminado!");
       }
+      }
     });
   }
 }
 
-// renderizado del grid con CSS clásico
+// renderizado del grid
 function renderBoard(gameBoard, grid) {
   gameBoard.innerHTML = "";
 
   grid.forEach((row, rowIndex) =>
     row.forEach((tile, colIndex) => {
       const div = document.createElement("div");
-      div.className = "tile"; // clase CSS para tiles
+      div.className = "tile";
       if (tile) {
         div.textContent = tile.value;
-        div.classList.add(`tile-${tile.value}`); // clase CSS específica por valor
+        div.classList.add(`tile-${tile.value}`);
       }
       gameBoard.appendChild(div);
     })
