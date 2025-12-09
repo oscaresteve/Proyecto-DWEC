@@ -29,7 +29,7 @@ export async function login(email, password) {
     const data = await fetchSupabase("/auth/v1/token?grant_type=password", { email, password });
 
     if (data.access_token) {
-      setState({ user: { email, token: data.access_token }, route: 'home' });
+      setState({ user: { email, token: data.access_token }, route: 'game' });
       console.log("State: ", state$._value);
       
     } else {
