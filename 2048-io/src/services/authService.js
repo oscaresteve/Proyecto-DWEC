@@ -29,9 +29,9 @@ export async function login(email, password) {
     const data = await fetchSupabase("/auth/v1/token?grant_type=password", { email, password });
 
     if (data.access_token) {
+      await ensureUserExists(email, data.access_token);
       setState({ user: { email, token: data.access_token }, route: 'game' });
       console.log("State: ", state$._value);
-      
     } else {
       alert('Login failed: no access token received');
     }
@@ -55,3 +55,27 @@ export async function register(email, password) {
     alert(`Registration failed: ${error?.error || JSON.stringify(error)}`);
   }
 }
+
+export async function ensureUserExists(email, token, nickname = "Player") {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token}`,
+        Prefer: "resolution=ignore-duplicates"
+      },
+      body: JSON.stringify({
+        email,
+        nickname,
+        max_score: 0,
+        current_game: null
+      })
+    });
+    console.log(`Usuario asegurado en Supabase: ${email}`);
+  } catch (err) {
+    console.error("Error asegurando usuario:", err);
+  }
+}
+
