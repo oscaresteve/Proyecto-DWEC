@@ -1,6 +1,6 @@
 import { setState, state$ } from "../services/stateService.js";
 import { createGameState, applyMove, isGameOver } from "../components/game.js";
-import { saveGameMove } from "../services/gameService.js";
+import { saveGame } from "../services/gameService.js";
 
 // evitar subscripciones y listeners duplicados
 let gameSubscription = null;
@@ -25,27 +25,38 @@ export function renderGameView(root) {
 
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
-  const maxScore = root.querySelector("#max-score")
+  const maxScore = root.querySelector("#max-score");
   const gameOverContainer = root.querySelector("#game-over-container");
 
-  // crear game si no existe en el estado
-  if (!state$.value.game) {
-    setState({ game: createGameState(5) });
+  // crear game dentro de user si no existe
+  if (!state$.value.user.game) {
+    const newGame = createGameState(5);
+    const prevUser = state$.value.user;
+    setState({
+      user: {
+        ...prevUser,
+        game: newGame,
+      },
+    });
   }
 
   // subscripción para renderizar el board cuando haya cambios en game
   if (!gameSubscription) {
-    gameSubscription = state$.subscribe(({ game }) => {
+    gameSubscription = state$.subscribe((state) => {
+      const { user } = state;
+      if (!user) return;
+
+      const game = user.game;
       if (!game) return;
 
       renderBoard(gameBoard, game.grid);
       score.textContent = game.score;
-      maxScore.textContent = state$.value.user.max_score
+      maxScore.textContent = user.max_score ?? 0;
 
       gameOver = isGameOver(game);
       renderGameOverButton();
 
-      saveGameMove(game);
+      saveGame();
     });
   }
 
@@ -59,10 +70,24 @@ export function renderGameView(root) {
         !gameOver
       ) {
         e.preventDefault();
-        const { game } = state$.value;
-        const newGame = applyMove(game, e.key);
 
-        setState({ game: newGame });
+        const prevUser = state$.value.user;
+        if (!prevUser || !prevUser.game) return;
+
+        const newGame = applyMove(prevUser.game, e.key);
+
+        const newMaxScore = Math.max(
+          prevUser.max_score ?? 0,
+          newGame.score ?? 0
+        );
+
+        setState({
+          user: {
+            ...prevUser,
+            game: newGame,
+            max_score: newMaxScore,
+          },
+        });
       }
     });
   }

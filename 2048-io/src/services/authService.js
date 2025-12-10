@@ -55,13 +55,10 @@ export async function login(email, password) {
         token: token,
         nickname: userData.nickname,
         max_score: userData.max_score,
+        game: userData.game,
       },
       route: "game",
-      game: userData.game,
     });
-
-    console.log("Estado:", state$.value);
-    
   } catch (error) {
     alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
   }

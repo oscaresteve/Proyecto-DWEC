@@ -6,17 +6,28 @@ const initialState = {
     token: null,
     nickname: null,
     max_score: 0,
+    game: null,
   },
   route: "login",
-  game: {},
 };
 
 const state$ = new BehaviorSubject(initialState);
 
 function setState(partial) {
-  state$.next({ ...state$.value, ...partial });
-  console.log("Estado Actualizado: ", state$.value);
-  
+  const prev = state$.value;
+
+  const next = {
+    ...prev,
+    ...partial,
+    user: {
+      ...prev.user,
+      ...partial.user,
+    },
+  };
+
+  state$.next(next);
+  console.log("Estado Actualizado: ", next);
 }
+
 
 export { state$, setState };
