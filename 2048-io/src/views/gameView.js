@@ -6,13 +6,11 @@ import { updateNickname } from "../services/userService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
-
 let gameOver = false;
 
 export function renderGameView(root) {
   root.innerHTML = `
   <div class="flex flex-row min-h-screen bg-gray-100 p-4">
-    <!-- Panel usuario -->
     <div class="w-1/4 mr-4 bg-white p-4 rounded shadow">
       <h2 class="text-2xl font-bold mb-2">Mi Perfil</h2>
       <div class="mb-2"><strong>Email:</strong> <span id="user-email"></span></div>
@@ -20,10 +18,10 @@ export function renderGameView(root) {
         <label for="nickname-input" class="block font-semibold mb-1">Nickname:</label>
         <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1" />
         <button id="update-nickname-btn" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Actualizar</button>
+        <p id="nickname-msg"></p>
       </div>
     </div>
 
-    <!-- Tablero y ranking -->
     <div class="flex flex-col items-center justify-center w-2/4">
       <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048-io</h1>
       <div id="game-board" class="board"></div>
@@ -41,7 +39,6 @@ export function renderGameView(root) {
       </div>
     </div>
 
-    <!-- Ranking lateral -->
     <div class="w-1/4 ml-4">
       <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
       <ul id="ranking-list" class="bg-white p-2 rounded shadow"></ul>
@@ -58,35 +55,61 @@ export function renderGameView(root) {
   const userEmailSpan = root.querySelector("#user-email");
   const nicknameInput = root.querySelector("#nickname-input");
   const updateNicknameBtn = root.querySelector("#update-nickname-btn");
+  const nicknameMsg = root.querySelector("#nickname-msg");
 
-  if (!state$.value.user.game) {
-    const newGame = createGameState(5);
-    const prevUser = state$.value.user;
-    setState({
-      user: {
-        ...prevUser,
-        game: newGame,
-      },
-    });
+  function renderGameOverText() {
+    gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
   }
 
-  if (!gameSubscription) {
-    gameSubscription = state$.subscribe(async (state) => {
-      const { user } = state;
-      if (!user || !user.game) return;
+  function renderBoard(gameBoard, grid) {
+    gameBoard.innerHTML = "";
 
-      const game = user.game;
+    grid.forEach((row) =>
+      row.forEach((tile) => {
+        const div = document.createElement("div");
+        div.className = "tile";
 
-      renderBoard(gameBoard, game.grid);
-      score.textContent = game.score;
-      maxScore.textContent = user.max_score ?? 0;
+        if (tile) {
+          div.textContent = tile.value;
+          div.classList.add(`tile-${tile.value}`);
+        }
 
-      gameOver = isGameOver(game);
-      renderGameOverText();
+        gameBoard.appendChild(div);
+      })
+    );
+  }
 
-      await saveGame();
-      updateRanking();
-    });
+async function updateRanking() {
+  const { success, data: ranking, error } = await fetchGlobalRanking(10);
+
+  if (!success) {
+    console.error("No se pudo actualizar el ranking:", error.message);
+    rankingList.innerHTML = `<li class="text-red-500">No se pudo cargar el ranking</li>`;
+    return;
+  }
+
+  const currentNickname = state$.value.user?.nickname;
+
+  rankingList.innerHTML = ranking
+    .map((user, index) => {
+      const isCurrent = user.nickname === currentNickname;
+      
+      return `
+        <li class="flex justify-between py-1 px-2 rounded mb-1 ${
+          isCurrent ? "bg-yellow-200 font-bold" : ""
+        }">
+          <span>${index + 1}. ${user.nickname}</span>
+          <span>${user.max_score}</span>
+        </li>
+      `;
+    })
+    .join("");
+}
+
+  if (!state$.value.user.game) {
+    const prevUser = state$.value.user;
+    const newGame = createGameState(5);
+    setState({ user: { ...prevUser, game: newGame } });
   }
 
   if (!keyListenerAdded) {
@@ -103,6 +126,7 @@ export function renderGameView(root) {
         if (!prevUser || !prevUser.game) return;
 
         const newGame = applyMove(prevUser.game, e.key);
+
         const newMaxScore = Math.max(
           prevUser.max_score ?? 0,
           newGame.score ?? 0
@@ -119,9 +143,25 @@ export function renderGameView(root) {
     });
   }
 
-  if (state$.value.user) {
-    userEmailSpan.textContent = state$.value.user.email;
-    nicknameInput.value = state$.value.user.nickname ?? "";
+  if (!gameSubscription) {
+    gameSubscription = state$.subscribe(async (state) => {
+      const { user } = state;
+      if (!user || !user.game) return;
+
+      const game = user.game;
+
+      renderBoard(gameBoard, game.grid);
+
+      score.textContent = game.score;
+      maxScore.textContent = user.max_score ?? 0;
+
+      gameOver = isGameOver(game);
+      renderGameOverText();
+
+      await saveGame();
+
+      updateRanking();
+    });
   }
 
   updateNicknameBtn.addEventListener("click", async () => {
@@ -145,64 +185,38 @@ export function renderGameView(root) {
       });
 
       updateRanking();
-      alert("Nickname actualizado correctamente!");
+
+      nicknameMsg.textContent = "Nickname actualizado correctamente!";
+      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+      setTimeout(() => nicknameMsg.textContent = "", 3000);
     } else {
-      alert(error || "No se pudo actualizar el nickname");
+      nicknameMsg.textContent = "No se pudo actualizar el nickname";
+      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
+      setTimeout(() => nicknameMsg.textContent = "", 3000);
     }
   });
 
   restartButton.addEventListener("click", (e) => {
     e.preventDefault();
+
     const prevUser = state$.value.user;
     if (!prevUser || !prevUser.game) return;
 
     const newGame = createGameState(5);
+
     setState({
       user: {
         ...prevUser,
         game: newGame,
       },
     });
+    
     gameOver = false;
   });
 
-  function renderGameOverText() {
-    gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
-  }
-
-  function renderBoard(gameBoard, grid) {
-    gameBoard.innerHTML = "";
-
-    grid.forEach((row) =>
-      row.forEach((tile) => {
-        const div = document.createElement("div");
-        div.className = "tile";
-        if (tile) {
-          div.textContent = tile.value;
-          div.classList.add(`tile-${tile.value}`);
-        }
-        gameBoard.appendChild(div);
-      })
-    );
-  }
-
-  async function updateRanking() {
-    const ranking = await fetchGlobalRanking(10);
-    const currentNickname = state$.value.user?.nickname;
-
-    rankingList.innerHTML = ranking
-      .map((user, index) => {
-        const isCurrent = user.nickname === currentNickname;
-        return `
-        <li class="flex justify-between py-1 px-2 rounded mb-1 ${
-          isCurrent ? "bg-yellow-200 font-bold" : ""
-        }">
-          <span>${index + 1}. ${user.nickname}</span>
-          <span>${user.max_score}</span>
-        </li>
-      `;
-      })
-      .join("");
+  if (state$.value.user) {
+    userEmailSpan.textContent = state$.value.user.email;
+    nicknameInput.value = state$.value.user.nickname ?? "";
   }
 
   updateRanking();

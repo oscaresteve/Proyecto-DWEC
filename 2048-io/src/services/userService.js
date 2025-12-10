@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY =
 
 export async function fetchUser(email, token) {
   try {
-    const res = await fetch(
+    const response = await fetch(
       `${SUPABASE_URL}/rest/v1/users?email=eq.${email}`,
       {
         headers: {
@@ -13,16 +13,28 @@ export async function fetchUser(email, token) {
         },
       }
     );
-    const data = await res.json();
-    return data[0] || null;
+
+    if (!response.ok) {
+      let errorMsg = "Error desconocido con Supabase";
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error_description || errData.msg || errorMsg;
+      } catch {}
+      console.error("Supabase error:", errorMsg);
+      return { success: false, data: null, error: new Error(errorMsg) };
+    }
+
+    const data = await response.json();
+    return { success: true, data: data[0] || null, error: null };
   } catch (err) {
-    console.error("Error obteniendo el usuario:", err);
+    console.error("Supabase fetch error:", err);
+    return { success: false, data: null, error: new Error("Error de conexión con Supabase") };
   }
 }
 
 export async function updateNickname(email, token, newNickname) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${email}`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${email}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -32,15 +44,19 @@ export async function updateNickname(email, token, newNickname) {
       body: JSON.stringify({ nickname: newNickname }),
     });
 
-    if (!res.ok) {
-      console.error("Error actualizando nickname:", res.status, res.statusText);
-      return { error: "No se pudo actualizar el nickname" };
+    if (!response.ok) {
+      let errorMsg = "Error desconocido con Supabase";
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error_description || errData.msg || errorMsg;
+      } catch {}
+      console.error("Supabase error:", errorMsg);
+      return { success: false, error: new Error(errorMsg) };
     }
 
-    const data = await res.json();
-    return { success: true, data };
+    return { success: true, error: null };
   } catch (err) {
-    console.error("Error en updateNickname:", err);
-    return { error: "Error de conexión" };
+    console.error("Supabase fetch error:", err);
+    return { success: false, error: new Error("Error de conexión con Supabase") };
   }
 }

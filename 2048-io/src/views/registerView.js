@@ -15,6 +15,7 @@ export function renderRegisterView(root) {
         <button type="submit"
           class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition">Register</button>
         <p id="register-error" class="text-red-500 text-sm text-center mt-2"></p>
+        <p id="register-success" class="text-green-500 text-sm text-center mt-2"></p>
         <p class="text-sm text-gray-500 text-center mt-2">
           Already have an account? 
           <span id="login-link" class="text-blue-500 cursor-pointer hover:underline">Login</span>
@@ -29,28 +30,26 @@ export function renderRegisterView(root) {
   const confirmInput = root.querySelector("#confirm-password");
   const loginLink = root.querySelector("#login-link");
   const errorEl = root.querySelector("#register-error");
+  const succesEl = root.querySelector("#register-success");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorEl.textContent = "";
+    succesEl.textContent = "";
 
     if (passwordInput.value !== confirmInput.value) {
       errorEl.textContent = "Las contraseñas no coinciden";
       return;
     }
 
-    try {
-      const result = await register(emailInput.value, passwordInput.value);
-      if (result?.error) {
-        errorEl.textContent = result.error;
-      } else if (result?.success) {
-        errorEl.textContent = result.message;
-        console.log("Registro exitoso:", emailInput.value);
-      }
-    } catch (err) {
-      console.error("Error en registro:", err);
-      errorEl.textContent = "Ocurrió un error inesperado. Revisa la consola.";
+    const result = await register(emailInput.value, passwordInput.value);
+
+    if (result.error) {
+      errorEl.textContent = result.error;
+      return;
     }
+
+    succesEl.textContent = result.message;
   });
 
   loginLink.addEventListener("click", () => {

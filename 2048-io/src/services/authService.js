@@ -18,74 +18,65 @@ async function fetchSupabase(endpoint, body) {
     });
 
     const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Supabase error:", error);
-    return { error: "Error de conexión con Supabase" };
+
+    if (!response.ok) {
+      const message =
+        data.error_description || data.msg || "Error desconocido con Supabase";
+
+      console.error("Supabase error:", message);
+
+      return { data: null, error: new Error(message) };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Supabase fetch error:", err);
+    return { data: null, error: new Error("Error de conexión con Supabase") };
   }
 }
 
 export async function login(email, password) {
-  try {
-    const data = await fetchSupabase("/auth/v1/token?grant_type=password", {
-      email,
-      password,
-    });
+  const { data, error } = await fetchSupabase(
+    "/auth/v1/token?grant_type=password",
+    { email, password }
+  );
 
-    if (!data.access_token) {
-      console.warn("Login fallido: no se recibió token");
-      return { error: "Email o contraseña incorrectos" };
-    }
+  if (error) return { error: error.message };
 
-    const token = data.access_token;
-    await ensureUserExists(email, token);
+  const token = data.access_token;
+  if (!token) return { error: "Email o contraseña incorrectos" };
 
-    const userData = await fetchUser(email, token);
-    if (!userData) {
-      console.warn("No se pudo obtener información del usuario");
-      return { error: "No se pudo obtener información del usuario" };
-    }
+  await ensureUserExists(email, token);
 
-    console.log("Usuario logueado:", userData);
+  const { success, data: user} = await fetchUser(email, token);
+  if (!success) return { error: "No se pudo obtener información del usuario" };
 
-    setState({
-      user: {
-        email: userData.email,
-        token: token,
-        nickname: userData.nickname,
-        max_score: userData.max_score,
-        game: userData.game,
-      },
-      route: "game",
-    });
+  setState({
+    user: {
+      email: user.email,
+      token,
+      nickname: user.nickname,
+      max_score: user.max_score,
+      game: user.game,
+    },
+    route: "game",
+  });
 
-    return { success: true };
-  } catch (error) {
-    console.error("Error en login:", error);
-    return { error: "Ocurrió un error inesperado" };
-  }
+  return { success: true };
 }
 
 export async function register(email, password) {
-  try {
-    const data = await fetchSupabase("/auth/v1/signup", { email, password });
+  const { data, error } = await fetchSupabase("/auth/v1/signup", {
+    email,
+    password,
+  });
 
-    console.log("Respuesta de registro:", data);
+  if (error) return { error: error.message };
 
-    if (!data.email) {
-      return { error: "Ocurrió un error inesperado durante el registro" };
-    }
-
-    console.log("Registro exitoso, email de confirmación enviado:", data.email);
-    return {
-      success: true,
-      message:
-        "Registro exitoso. Revisa tu email para confirmar la cuenta antes de iniciar sesión.",
-    };
-  } catch (err) {
-    console.error("Error en registro:", err);
-    return { error: "Ocurrió un error inesperado durante el registro" };
-  }
+  return {
+    success: true,
+    message: "Registro exitoso. Revisa tu email para confirmar la cuenta.",
+  };
 }
 
 export async function ensureUserExists(email, token, nickname = "Player") {

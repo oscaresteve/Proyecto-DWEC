@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY =
 
 export async function fetchGlobalRanking(limit = 10) {
   try {
-    const res = await fetch(
+    const response = await fetch(
       `${SUPABASE_URL}/rest/v1/users?select=email,nickname,max_score&order=max_score.desc&limit=${limit}`,
       {
         headers: {
@@ -14,15 +14,20 @@ export async function fetchGlobalRanking(limit = 10) {
       }
     );
 
-    if (!res.ok) {
-      console.error("Error fetching ranking:", res.status, res.statusText);
-      return [];
+    if (!response.ok) {
+      let errorMsg = "Error desconocido con Supabase";
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error_description || errData.msg || errorMsg;
+      } catch {}
+      console.error("Supabase error:", errorMsg);
+      return { success: false, data: [], error: new Error(errorMsg) };
     }
 
-    const data = await res.json();
-    return data;
+    const data = await response.json();
+    return {success: true, data, error: null};
   } catch (err) {
-    console.error("Error fetching ranking:", err);
-    return [];
+    console.error("Supabase fetch error:", err);
+    return { success: false, data: [], error: new Error("Error de conexión con Supabase")};
   }
 }

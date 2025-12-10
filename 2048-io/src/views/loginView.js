@@ -29,15 +29,14 @@ export function renderLoginView(root) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     errorEl.textContent = "";
-    try {
-      const result = await login(emailInput.value, passwordInput.value);
-      if (result?.error) {
-        errorEl.textContent = result.error;
-      }
-    } catch (err) {
-      console.error("Error en login:", err);
-      errorEl.textContent = "Ocurrió un error inesperado. Revisa la consola.";
+
+    const result = await login(emailInput.value, passwordInput.value);
+    
+    if (result.error) {
+      errorEl.textContent = result.error;
+      return;
     }
   });
 
