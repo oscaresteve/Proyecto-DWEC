@@ -141,15 +141,20 @@ export function renderGameView(root) {
 
   async function updateRanking() {
     const ranking = await fetchGlobalRanking(10);
-    
+    const currentNickname = state$.value.user?.nickname;
+
     rankingList.innerHTML = ranking
-      .map(
-        (user, index) =>
-          `<li class="flex justify-between py-1">
-            <span>${index + 1}. ${user.nickname}</span>
-            <span>${user.max_score}</span>
-          </li>`
-      )
+      .map((user, index) => {
+        const isCurrent = user.nickname === currentNickname;
+        return `
+        <li class="flex justify-between py-1 px-2 rounded mb-1 ${
+          isCurrent ? "bg-yellow-200 font-bold" : ""
+        }">
+          <span>${index + 1}. ${user.nickname}</span>
+          <span>${user.max_score}</span>
+        </li>
+      `;
+      })
       .join("");
   }
 
