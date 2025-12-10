@@ -10,8 +10,11 @@ export function renderRegisterView(root) {
           class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400"/>
         <input type="password" id="password" placeholder="Password" required
           class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400"/>
+        <input type="password" id="confirm-password" placeholder="Confirm Password" required
+          class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400"/>
         <button type="submit"
           class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition">Register</button>
+        <p id="register-error" class="text-red-500 text-sm text-center mt-2"></p>
         <p class="text-sm text-gray-500 text-center mt-2">
           Already have an account? 
           <span id="login-link" class="text-blue-500 cursor-pointer hover:underline">Login</span>
@@ -23,13 +26,30 @@ export function renderRegisterView(root) {
   const form = root.querySelector("#register-form");
   const emailInput = root.querySelector("#email");
   const passwordInput = root.querySelector("#password");
+  const confirmInput = root.querySelector("#confirm-password");
   const loginLink = root.querySelector("#login-link");
+  const errorEl = root.querySelector("#register-error");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const data = await register(emailInput.value, passwordInput.value);
-    if (data.user) {
-      setState({ route: "login" });
+    errorEl.textContent = "";
+
+    if (passwordInput.value !== confirmInput.value) {
+      errorEl.textContent = "Las contraseñas no coinciden";
+      return;
+    }
+
+    try {
+      const result = await register(emailInput.value, passwordInput.value);
+      if (result?.error) {
+        errorEl.textContent = result.error;
+      } else if (result?.success) {
+        errorEl.textContent = result.message;
+        console.log("Registro exitoso:", emailInput.value);
+      }
+    } catch (err) {
+      console.error("Error en registro:", err);
+      errorEl.textContent = "Ocurrió un error inesperado. Revisa la consola.";
     }
   });
 

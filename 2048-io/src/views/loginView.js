@@ -12,6 +12,7 @@ export function renderLoginView(root) {
           class="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"/>
         <button type="submit"
           class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Login</button>
+        <p id="login-error" class="text-red-500 text-sm text-center mt-2"></p>
         <p class="text-sm text-gray-500 text-center mt-2">
           Don't have an account? 
           <span id="register-link" class="text-blue-500 cursor-pointer hover:underline">Register</span>
@@ -24,10 +25,20 @@ export function renderLoginView(root) {
   const emailInput = root.querySelector("#email");
   const passwordInput = root.querySelector("#password");
   const registerLink = root.querySelector("#register-link");
+  const errorEl = root.querySelector("#login-error");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await login(emailInput.value, passwordInput.value);
+    errorEl.textContent = "";
+    try {
+      const result = await login(emailInput.value, passwordInput.value);
+      if (result?.error) {
+        errorEl.textContent = result.error;
+      }
+    } catch (err) {
+      console.error("Error en login:", err);
+      errorEl.textContent = "Ocurrió un error inesperado. Revisa la consola.";
+    }
   });
 
   registerLink.addEventListener("click", () => {

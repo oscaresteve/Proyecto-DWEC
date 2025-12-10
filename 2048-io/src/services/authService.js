@@ -1,4 +1,4 @@
-import { setState, state$ } from "./stateService.js";
+import { setState } from "./stateService.js";
 import { fetchUser } from "./userService.js";
 
 const SUPABASE_URL = "https://ypfxbsnqfpdkwzrhmkoa.supabase.co";
@@ -18,11 +18,10 @@ async function fetchSupabase(endpoint, body) {
     });
 
     const data = await response.json();
-
     return data;
   } catch (error) {
     console.error("Supabase error:", error);
-    throw error;
+    return { error: "Error de conexión con Supabase" };
   }
 }
 
@@ -33,18 +32,18 @@ export async function login(email, password) {
       password,
     });
 
-    const token = data.access_token;
-    if (!token) {
-      alert("Login failed: no access token received");
-      return;
+    if (!data.access_token) {
+      console.warn("Login fallido: no se recibió token");
+      return { error: "Email o contraseña incorrectos" };
     }
 
+    const token = data.access_token;
     await ensureUserExists(email, token);
 
     const userData = await fetchUser(email, token);
     if (!userData) {
-      alert("No se pudo obtener información del usuario");
-      return;
+      console.warn("No se pudo obtener información del usuario");
+      return { error: "No se pudo obtener información del usuario" };
     }
 
     console.log("Usuario logueado:", userData);
@@ -59,8 +58,11 @@ export async function login(email, password) {
       },
       route: "game",
     });
+
+    return { success: true };
   } catch (error) {
-    alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
+    console.error("Error en login:", error);
+    return { error: "Ocurrió un error inesperado" };
   }
 }
 
@@ -68,15 +70,21 @@ export async function register(email, password) {
   try {
     const data = await fetchSupabase("/auth/v1/signup", { email, password });
 
-    if (data.user) {
-      alert("Registration successful! You can now log in.");
-    } else {
-      alert("Registration failed.");
+    console.log("Respuesta de registro:", data);
+
+    if (!data.email) {
+      return { error: "Ocurrió un error inesperado durante el registro" };
     }
 
-    return data;
-  } catch (error) {
-    alert(`Registration failed: ${error?.error || JSON.stringify(error)}`);
+    console.log("Registro exitoso, email de confirmación enviado:", data.email);
+    return {
+      success: true,
+      message:
+        "Registro exitoso. Revisa tu email para confirmar la cuenta antes de iniciar sesión.",
+    };
+  } catch (err) {
+    console.error("Error en registro:", err);
+    return { error: "Ocurrió un error inesperado durante el registro" };
   }
 }
 
