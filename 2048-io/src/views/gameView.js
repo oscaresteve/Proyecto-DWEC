@@ -19,7 +19,12 @@ export function renderGameView(root) {
       <div class="mt-2 text-xl font-bold text-gray-700">
         Max Score: <span id="max-score">0</span>
       </div>
-      <div id="game-over-container" class="mt-4"></div>
+      <div class="mt-4 flex flex-col items-center">
+        <div id="game-over-container" class="mb-2"></div>
+        <button id="restart-game" class="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
+          Reiniciar Partida
+        </button>
+      </div>
     </div>
   `;
 
@@ -27,8 +32,8 @@ export function renderGameView(root) {
   const score = root.querySelector("#score");
   const maxScore = root.querySelector("#max-score");
   const gameOverContainer = root.querySelector("#game-over-container");
+  const restartButton = root.querySelector("#restart-game");
 
-  // crear game dentro de user si no existe
   if (!state$.value.user.game) {
     const newGame = createGameState(5);
     const prevUser = state$.value.user;
@@ -40,7 +45,6 @@ export function renderGameView(root) {
     });
   }
 
-  // subscripción para renderizar el board cuando haya cambios en game
   if (!gameSubscription) {
     gameSubscription = state$.subscribe((state) => {
       const { user } = state;
@@ -54,13 +58,12 @@ export function renderGameView(root) {
       maxScore.textContent = user.max_score ?? 0;
 
       gameOver = isGameOver(game);
-      renderGameOverButton();
+      renderGameOverText();
 
       saveGame();
     });
   }
 
-  // input del usuario
   if (!keyListenerAdded) {
     keyListenerAdded = true;
 
@@ -75,7 +78,6 @@ export function renderGameView(root) {
         if (!prevUser || !prevUser.game) return;
 
         const newGame = applyMove(prevUser.game, e.key);
-
         const newMaxScore = Math.max(
           prevUser.max_score ?? 0,
           newGame.score ?? 0
@@ -92,24 +94,26 @@ export function renderGameView(root) {
     });
   }
 
-  // renderiza el botón de nueva partida si gameOver es true
-  function renderGameOverButton() {
-    gameOverContainer.innerHTML = "";
-    if (gameOver) {
-      const button = document.createElement("button");
-      button.textContent = "Nueva Partida";
-      button.className =
-        "mt-2 px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600";
-      button.addEventListener("click", () => {
-        setState({ game: createGameState(5) });
-        gameOver = false;
-      });
-      gameOverContainer.appendChild(button);
-    }
+  restartButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    const prevUser = state$.value.user;
+    if (!prevUser || !prevUser.game) return;
+
+    const newGame = createGameState(5);
+    setState({
+      user: {
+        ...prevUser,
+        game: newGame,
+      },
+    });
+    gameOver = false;
+  });
+
+  function renderGameOverText() {
+    gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
   }
 }
 
-// renderizado del grid
 function renderBoard(gameBoard, grid) {
   gameBoard.innerHTML = "";
 

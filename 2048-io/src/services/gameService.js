@@ -17,7 +17,6 @@ export async function saveGame() {
         Authorization: `Bearer ${user.token}`,
       },
       body: JSON.stringify({
-        nickname: user.nickname,
         max_score: user.max_score,
         game: user.game,
       }),
