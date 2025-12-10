@@ -1,4 +1,5 @@
 import { setState, state$ } from "./stateService.js";
+import { fetchUser } from "./userService.js";
 
 const SUPABASE_URL = "https://ypfxbsnqfpdkwzrhmkoa.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -32,13 +33,31 @@ export async function login(email, password) {
       password,
     });
 
-    if (data.access_token) {
-      await ensureUserExists(email, data.access_token);
-      setState({ user: { email, token: data.access_token }, route: "game" });
-      console.log("State: ", state$._value);
-    } else {
+    const token = data.access_token;
+    if (!token) {
       alert("Login failed: no access token received");
+      return;
     }
+
+    await ensureUserExists(email, token);
+
+    const userData = await fetchUser(email, token);
+    if (!userData) {
+      alert("No se pudo obtener información del usuario");
+      return;
+    }
+
+    setState({
+      user: {
+        email,
+        token,
+        ...userData,
+      },
+      route: "game",
+    });
+
+    console.log("Estado:", state$.value);
+    console.log("Usuario logueado:", userData);
   } catch (error) {
     alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
   }
@@ -74,7 +93,7 @@ export async function ensureUserExists(email, token, nickname = "Player") {
         email,
         nickname,
         max_score: 0,
-        current_game: null,
+        game: null,
       }),
     });
     console.log(`Usuario asegurado en Supabase: ${email}`);

@@ -33,7 +33,7 @@ export async function saveGameMove(game) {
   try {
     const maxScore = await getMaxScore();
 
-    const body = { current_game: game };
+    const body = { game };
     if (game.score > maxScore) {
       body.max_score = game.score;
     }
