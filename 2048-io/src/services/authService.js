@@ -47,17 +47,21 @@ export async function login(email, password) {
       return;
     }
 
+    console.log("Usuario logueado:", userData);
+
     setState({
       user: {
-        email,
-        token,
-        ...userData,
+        email: userData.email,
+        token: token,
+        nickname: userData.nickname,
+        max_score: userData.max_score,
       },
       route: "game",
+      game: userData.game,
     });
 
     console.log("Estado:", state$.value);
-    console.log("Usuario logueado:", userData);
+    
   } catch (error) {
     alert(`Login failed: ${error?.error || JSON.stringify(error)}`);
   }
