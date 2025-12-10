@@ -2,6 +2,7 @@ import { setState, state$ } from "../services/stateService.js";
 import { createGameState, applyMove, isGameOver } from "../components/game.js";
 import { saveGame } from "../services/gameService.js";
 import { fetchGlobalRanking } from "../services/rankingService.js";
+import { updateNickname } from "../services/userService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -10,32 +11,43 @@ let gameOver = false;
 
 export function renderGameView(root) {
   root.innerHTML = `
-    <div class="flex flex-row min-h-screen bg-gray-100 p-4">
-      <!-- Tablero y scores -->
-      <div class="flex flex-col items-center justify-center w-3/4">
-        <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048-io</h1>
-        <div id="game-board" class="board"></div>
-        <div class="mt-4 text-xl font-semibold text-gray-700">
-          Score: <span id="score">0</span>
-        </div>
-        <div class="mt-2 text-xl font-bold text-gray-700">
-          Max Score: <span id="max-score">0</span>
-        </div>
-        <div class="mt-4 flex flex-col items-center">
-          <div id="game-over-container" class="mb-2"></div>
-          <button id="restart-game" class="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
-            Reiniciar Partida
-          </button>
-        </div>
-      </div>
-
-      <!-- Ranking lateral -->
-      <div class="w-1/4 ml-4">
-        <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
-        <ul id="ranking-list" class="bg-white p-2 rounded shadow"></ul>
+  <div class="flex flex-row min-h-screen bg-gray-100 p-4">
+    <!-- Panel usuario -->
+    <div class="w-1/4 mr-4 bg-white p-4 rounded shadow">
+      <h2 class="text-2xl font-bold mb-2">Mi Perfil</h2>
+      <div class="mb-2"><strong>Email:</strong> <span id="user-email"></span></div>
+      <div class="mb-4">
+        <label for="nickname-input" class="block font-semibold mb-1">Nickname:</label>
+        <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1" />
+        <button id="update-nickname-btn" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Actualizar</button>
       </div>
     </div>
-  `;
+
+    <!-- Tablero y ranking -->
+    <div class="flex flex-col items-center justify-center w-2/4">
+      <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048-io</h1>
+      <div id="game-board" class="board"></div>
+      <div class="mt-4 text-xl font-semibold text-gray-700">
+        Score: <span id="score">0</span>
+      </div>
+      <div class="mt-2 text-xl font-bold text-gray-700">
+        Max Score: <span id="max-score">0</span>
+      </div>
+      <div class="mt-4 flex flex-col items-center">
+        <div id="game-over-container" class="mb-2"></div>
+        <button id="restart-game" class="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
+          Reiniciar Partida
+        </button>
+      </div>
+    </div>
+
+    <!-- Ranking lateral -->
+    <div class="w-1/4 ml-4">
+      <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
+      <ul id="ranking-list" class="bg-white p-2 rounded shadow"></ul>
+    </div>
+  </div>
+`;
 
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
@@ -43,6 +55,9 @@ export function renderGameView(root) {
   const gameOverContainer = root.querySelector("#game-over-container");
   const restartButton = root.querySelector("#restart-game");
   const rankingList = root.querySelector("#ranking-list");
+  const userEmailSpan = root.querySelector("#user-email");
+  const nicknameInput = root.querySelector("#nickname-input");
+  const updateNicknameBtn = root.querySelector("#update-nickname-btn");
 
   if (!state$.value.user.game) {
     const newGame = createGameState(5);
@@ -103,6 +118,38 @@ export function renderGameView(root) {
       }
     });
   }
+
+  if (state$.value.user) {
+    userEmailSpan.textContent = state$.value.user.email;
+    nicknameInput.value = state$.value.user.nickname ?? "";
+  }
+
+  updateNicknameBtn.addEventListener("click", async () => {
+    const prevUser = state$.value.user;
+
+    const newNickname = nicknameInput.value.trim();
+    if (!newNickname || newNickname === prevUser.nickname) return;
+
+    const { success, error } = await updateNickname(
+      prevUser.email,
+      prevUser.token,
+      newNickname
+    );
+
+    if (success) {
+      setState({
+        user: {
+          ...prevUser,
+          nickname: newNickname,
+        },
+      });
+
+      updateRanking();
+      alert("Nickname actualizado correctamente!");
+    } else {
+      alert(error || "No se pudo actualizar el nickname");
+    }
+  });
 
   restartButton.addEventListener("click", (e) => {
     e.preventDefault();
