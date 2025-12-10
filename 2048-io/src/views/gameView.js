@@ -16,12 +16,16 @@ export function renderGameView(root) {
       <div class="mt-4 text-xl font-semibold text-gray-700">
         Score: <span id="score">0</span>
       </div>
+      <div class="mt-2 text-xl font-bold text-gray-700">
+        Max Score: <span id="max-score">0</span>
+      </div>
       <div id="game-over-container" class="mt-4"></div>
     </div>
   `;
 
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
+  const maxScore = root.querySelector("#max-score")
   const gameOverContainer = root.querySelector("#game-over-container");
 
   // crear game si no existe en el estado
@@ -36,6 +40,7 @@ export function renderGameView(root) {
 
       renderBoard(gameBoard, game.grid);
       score.textContent = game.score;
+      maxScore.textContent = state$.value.user.max_score
 
       gameOver = isGameOver(game);
       renderGameOverButton();
