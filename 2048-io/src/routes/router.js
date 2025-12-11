@@ -2,7 +2,7 @@ import { state$, setState } from "../services/stateService.js";
 
 export const router = {
   init() {
-    window.addEventListener("hashchange", () => {
+    /*window.addEventListener("hashchange", () => {
       let route = location.hash.replace("#", "") || "login";
 
       const user = state$.value.user;
@@ -14,7 +14,7 @@ export const router = {
       }
 
       setState({ route });
-    });
+    });*/
 
     if (!state$.value.user) {
       const route = location.hash.replace("#", "") || "login";

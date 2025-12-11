@@ -7,6 +7,7 @@ const initialState = {
     nickname: null,
     max_score: 0,
     game: null,
+    avatar_url: null,
   },
   route: "login",
 };

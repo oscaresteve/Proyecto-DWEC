@@ -4,6 +4,7 @@ import { saveGame } from "../services/gameService.js";
 import { fetchGlobalRanking } from "../services/rankingService.js";
 import { updateNickname } from "../services/userService.js";
 import { logout } from "../services/authService.js";
+import { uploadAvatar } from "../services/userService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -20,6 +21,11 @@ export function renderGameView(root) {
         <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1" />
         <button id="update-nickname-btn" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Actualizar</button>
         <p id="nickname-msg"></p>
+        <form id="avatarForm" class="mt-3 flex flex-col gap-2">
+          <input class="border rounded px-2 py-1" type="file" name="avatar" accept="image/*" />
+          <button class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Subir foto</button>
+        </form>
+        <img id="profileAvatar" class="mt-3 rounded shadow" src="" alt="Avatar" width="100" />
         <button id="logout-btn" class="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Cerrar sesión</button>
       </div>
     </div>
@@ -95,6 +101,8 @@ export function renderGameView(root) {
   const nicknameMsg = root.querySelector("#nickname-msg");
   const targetTile = document.getElementById("target-tile");
   const logoutBtn = root.querySelector("#logout-btn");
+  const avatarForm = root.querySelector("#avatarForm");
+  const profileAvatar = root.querySelector("#profileAvatar");
 
   function renderGameOverText() {
     gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
@@ -221,6 +229,12 @@ export function renderGameView(root) {
     });
   }
 
+  if (state$.value.user) {
+    userEmailSpan.textContent = state$.value.user.email;
+    nicknameInput.value = state$.value.user.nickname ?? "";
+    profileAvatar.src = state$.value.user.avatar_url || "";
+  }
+
   updateNicknameBtn.addEventListener("click", async () => {
     const prevUser = state$.value.user;
 
@@ -292,17 +306,51 @@ export function renderGameView(root) {
   logoutBtn.addEventListener("click", (e) => {
     e.preventDefault();
 
-    gameSubscription = null;
+    if (gameSubscription) {
+      gameSubscription.unsubscribe();
+      gameSubscription = null;
+    }
+
     keyListenerAdded = false;
     gameOver = false;
 
     logout();
   });
 
-  if (state$.value.user) {
-    userEmailSpan.textContent = state$.value.user.email;
-    nicknameInput.value = state$.value.user.nickname ?? "";
-  }
+  avatarForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const file = avatarForm.avatar.files[0];
+    if (!file) {
+      nicknameMsg.textContent = "Selecciona una imagen";
+      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
+      return;
+    }
+
+    const { email, token } = state$.value.user;
+
+    const result = await uploadAvatar(file, email, token);
+
+    if (result.success) {
+      const currentUser = state$.value.user;
+
+      setState({
+        user: {
+          ...currentUser,
+          avatar_url: result.avatarUrl,
+        },
+      });
+
+      profileAvatar.src = result.avatarUrl;
+      nicknameMsg.textContent = "Imagen subida correctamente!";
+      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+    } else {
+      nicknameMsg.textContent = "Error subiendo imagen";
+      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
+    }
+
+    setTimeout(() => (nicknameMsg.textContent = ""), 3000);
+  });
 
   updateRanking();
 }

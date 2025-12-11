@@ -28,21 +28,28 @@ export async function fetchUser(email, token) {
     return { success: true, data: data[0] || null, error: null };
   } catch (err) {
     console.error("Supabase fetch error:", err);
-    return { success: false, data: null, error: new Error("Error de conexión con Supabase") };
+    return {
+      success: false,
+      data: null,
+      error: new Error("Error de conexión con Supabase"),
+    };
   }
 }
 
 export async function updateNickname(email, token, newNickname) {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${email}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nickname: newNickname }),
-    });
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/users?email=eq.${email}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nickname: newNickname }),
+      }
+    );
 
     if (!response.ok) {
       let errorMsg = "Error desconocido con Supabase";
@@ -57,6 +64,72 @@ export async function updateNickname(email, token, newNickname) {
     return { success: true, error: null };
   } catch (err) {
     console.error("Supabase fetch error:", err);
-    return { success: false, error: new Error("Error de conexión con Supabase") };
+    return {
+      success: false,
+      error: new Error("Error de conexión con Supabase"),
+    };
+  }
+}
+
+export async function uploadAvatar(file, email, token) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const filename = `${email}.jpg`;
+
+    const uploadResponse = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/avatars/${filename}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      let errorMsg = "Error desconocido con Supabase";
+      try {
+        const errData = await uploadResponse.json();
+        errorMsg = errData.error_description || errData.msg || errorMsg;
+      } catch {}
+      console.error("Supabase error:", errorMsg);
+      return { success: false, error: new Error(errorMsg) };
+    }
+
+    const avatarUrl = `${SUPABASE_URL}/storage/v1/object/public/avatars/${filename}`;
+
+    const updateResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/users?email=eq.${email}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ avatar_url: avatarUrl }),
+      }
+    );
+
+    if (!updateResponse.ok) {
+      let errorMsg = "Error desconocido con Supabase";
+      try {
+        const errData = await updateResponse.json();
+        errorMsg = errData.error_description || errData.msg || errorMsg;
+      } catch {}
+      console.error("Supabase error:", errorMsg);
+      return { success: false, error: new Error(errorMsg) };
+    }
+
+    return { success: true, avatarUrl, error: null };
+  } catch (err) {
+    console.error("Supabase fetch error:", err);
+    return {
+      success: false,
+      error: new Error("Error de conexión con Supabase"),
+    };
   }
 }
