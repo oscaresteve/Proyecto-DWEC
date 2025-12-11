@@ -1,7 +1,15 @@
 import { createGrid, addRandomTile, moveGrid, canMove } from "./grid.js";
 
 // estado inicial del juego
-export function createGameState(size = 5) {
+export function createGameState(size = 5, level = 1) {
+  const levelTargets = {
+    1: 16,
+    2: 64,
+    3: 256,
+    4: 1024,
+    5: 4096,
+  };
+
   let grid = createGrid(size);
   grid = addRandomTile(grid);
   grid = addRandomTile(grid);
@@ -9,8 +17,15 @@ export function createGameState(size = 5) {
   return {
     size,
     score: 0,
+    level,
+    target: levelTargets[level] ?? Math.pow(4, level),
     grid,
   };
+}
+
+// comprobar si se ha completado el nivel
+export function checkLevelComplete(grid, target) {
+  return grid.some(row => row.some(tile => tile?.value === target));
 }
 
 // mover en una direccion
@@ -31,6 +46,10 @@ export function applyMove(gameState, direction) {
     grid: newGrid,
     score: gameState.score + gained,
   };
+
+  if (checkLevelComplete(newGrid, gameState.target)) {
+    newState.levelCompleted = true;
+  }
 
   return newState;
 }

@@ -23,7 +23,7 @@ export function renderGameView(root) {
     </div>
 
     <div class="flex flex-col items-center justify-center w-2/4">
-      <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048-io</h1>
+      <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048 Adventure</h1>
       <div id="game-board" class="board"></div>
       <div class="mt-4 text-xl font-semibold text-gray-700">
         Score: <span id="score">0</span>
@@ -31,10 +31,19 @@ export function renderGameView(root) {
       <div class="mt-2 text-xl font-bold text-gray-700">
         Max Score: <span id="max-score">0</span>
       </div>
+      <div class="mt-2 text-lg font-semibold text-gray-700">
+        Nivel: <span id="level">1</span>
+      </div>
+      <div class="mt-1 text-lg font-semibold text-gray-700">
+        Objetivo: <span id="target">16</span>
+      </div>
       <div class="mt-4 flex flex-col items-center">
         <div id="game-over-container" class="mb-2"></div>
-        <button id="restart-game" class="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
+        <button id="restart-game" class="px-4 py-2 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600">
           Reiniciar Partida
+        </button>
+        <button id="restart-level" class="mt-2 px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
+          Reiniciar Nivel
         </button>
       </div>
     </div>
@@ -49,8 +58,11 @@ export function renderGameView(root) {
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
   const maxScore = root.querySelector("#max-score");
+  const level = document.getElementById("level");
+  const target = document.getElementById("target");
   const gameOverContainer = root.querySelector("#game-over-container");
-  const restartButton = root.querySelector("#restart-game");
+  const restartGameButton = root.querySelector("#restart-game");
+  const restartLevelButton = root.querySelector("#restart-level");
   const rankingList = root.querySelector("#ranking-list");
   const userEmailSpan = root.querySelector("#user-email");
   const nicknameInput = root.querySelector("#nickname-input");
@@ -108,7 +120,7 @@ async function updateRanking() {
 
   if (!state$.value.user.game) {
     const prevUser = state$.value.user;
-    const newGame = createGameState(5);
+    const newGame = createGameState();
     setState({ user: { ...prevUser, game: newGame } });
   }
 
@@ -154,6 +166,8 @@ async function updateRanking() {
 
       score.textContent = game.score;
       maxScore.textContent = user.max_score ?? 0;
+      level.textContent = game.level;
+      target.textContent = game.target;
 
       gameOver = isGameOver(game);
       renderGameOverText();
@@ -161,6 +175,22 @@ async function updateRanking() {
       await saveGame();
 
       updateRanking();
+
+      if (game.levelCompleted) {
+        const nextLevel = game.level + 1;
+        const newLevelGame = createGameState(5, nextLevel);
+
+        setState({
+          user: {
+            ...state.user,
+            game: newLevelGame,
+          }
+        });
+
+        alert("¡Nivel completado! Ahora estás en el nivel " + nextLevel);
+        return;
+      }
+
     });
   }
 
@@ -196,13 +226,13 @@ async function updateRanking() {
     }
   });
 
-  restartButton.addEventListener("click", (e) => {
+  restartGameButton.addEventListener("click", (e) => {
     e.preventDefault();
 
     const prevUser = state$.value.user;
     if (!prevUser || !prevUser.game) return;
 
-    const newGame = createGameState(5);
+    const newGame = createGameState();
 
     setState({
       user: {
@@ -214,6 +244,25 @@ async function updateRanking() {
     gameOver = false;
   });
 
+    restartLevelButton.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const prevUser = state$.value.user;
+    if (!prevUser || !prevUser.game) return;
+
+    const newGame = createGameState(5, prevUser.game.level);
+
+    setState({
+      user: {
+        ...prevUser,
+        game: newGame,
+      },
+    });
+    
+    gameOver = false;
+  });
+
+  // perfil
   if (state$.value.user) {
     userEmailSpan.textContent = state$.value.user.email;
     nicknameInput.value = state$.value.user.nickname ?? "";
