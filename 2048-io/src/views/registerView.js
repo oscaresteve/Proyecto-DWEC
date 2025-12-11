@@ -39,6 +39,7 @@ export function renderRegisterView(root) {
 
     if (passwordInput.value !== confirmInput.value) {
       errorEl.textContent = "Las contraseñas no coinciden";
+      setTimeout(() => {errorEl.textContent = "";}, 3000);
       return;
     }
 
@@ -46,10 +47,16 @@ export function renderRegisterView(root) {
 
     if (result.error) {
       errorEl.textContent = result.error;
+      setTimeout(() => {errorEl.textContent = "";}, 3000);
       return;
     }
 
+    emailInput.value = "";
+    passwordInput.value = "";
+    confirmInput.value = "";
+
     succesEl.textContent = result.message;
+    setTimeout(() => {succesEl.textContent = "";}, 3000);
   });
 
   loginLink.addEventListener("click", () => {
