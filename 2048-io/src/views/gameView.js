@@ -3,6 +3,7 @@ import { createGameState, applyMove, isGameOver } from "../components/game.js";
 import { saveGame } from "../services/gameService.js";
 import { fetchGlobalRanking } from "../services/rankingService.js";
 import { updateNickname } from "../services/userService.js";
+import { logout } from "../services/authService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -19,6 +20,7 @@ export function renderGameView(root) {
         <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1" />
         <button id="update-nickname-btn" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Actualizar</button>
         <p id="nickname-msg"></p>
+        <button id="logout-btn" class="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Cerrar sesión</button>
       </div>
     </div>
 
@@ -83,7 +85,6 @@ export function renderGameView(root) {
   const score = root.querySelector("#score");
   const maxScore = root.querySelector("#max-score");
   const level = document.getElementById("level");
-
   const gameOverContainer = root.querySelector("#game-over-container");
   const restartGameButton = root.querySelector("#restart-game");
   const restartLevelButton = root.querySelector("#restart-level");
@@ -93,6 +94,7 @@ export function renderGameView(root) {
   const updateNicknameBtn = root.querySelector("#update-nickname-btn");
   const nicknameMsg = root.querySelector("#nickname-msg");
   const targetTile = document.getElementById("target-tile");
+  const logoutBtn = root.querySelector("#logout-btn");
 
   function renderGameOverText() {
     gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
@@ -193,7 +195,6 @@ export function renderGameView(root) {
       maxScore.textContent = user.max_score ?? 0;
       level.textContent = game.level;
 
-
       targetTile.textContent = game.target;
       targetTile.className = "tile";
       targetTile.classList.add(`tile-${game.target}`);
@@ -288,7 +289,16 @@ export function renderGameView(root) {
     gameOver = false;
   });
 
-  // perfil
+  logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    gameSubscription = null;
+    keyListenerAdded = false;
+    gameOver = false;
+
+    logout();
+  });
+
   if (state$.value.user) {
     userEmailSpan.textContent = state$.value.user.email;
     nicknameInput.value = state$.value.user.nickname ?? "";

@@ -48,7 +48,7 @@ export async function login(email, password) {
 
   await ensureUserExists(email, token);
 
-  const { success, data: user} = await fetchUser(email, token);
+  const { success, data: user } = await fetchUser(email, token);
   if (!success) return { error: "No se pudo obtener información del usuario" };
 
   setState({
@@ -61,6 +61,14 @@ export async function login(email, password) {
     },
     route: "game",
   });
+
+  localStorage.setItem(
+    "user",
+    JSON.stringify({
+      email: user.email,
+      token,
+    })
+  );
 
   return { success: true };
 }
@@ -100,4 +108,42 @@ export async function ensureUserExists(email, token, nickname = "Player") {
   } catch (err) {
     console.error("Error asegurando usuario:", err);
   }
+}
+
+export async function restoreSession() {
+  const saved = localStorage.getItem("user");
+  if (!saved) return { restored: false };
+  console.log("saved", saved);
+  
+
+  const { email, token } = JSON.parse(saved);
+
+  const { success, data: user } = await fetchUser(email, token);
+
+  if (!success) {
+    localStorage.removeItem("user");
+    return { restored: false };
+  }
+
+  setState({
+    user: {
+      email: user.email,
+      token,
+      nickname: user.nickname,
+      max_score: user.max_score,
+      game: user.game,
+    },
+    route: "game",
+  });
+
+  return { restored: true };
+}
+
+export function logout() {
+  localStorage.removeItem("user");
+
+  setState({
+    user: null,
+    route: "login",
+  });
 }

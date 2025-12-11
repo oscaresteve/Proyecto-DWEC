@@ -1,12 +1,20 @@
-import { state$ } from "./services/stateService.js";
+import { setState, state$ } from "./services/stateService.js";
 import { router } from "./routes/router.js";
 import { renderLoginView } from "./views/loginView.js";
 import { renderRegisterView } from "./views/registerView.js";
 import { renderGameView } from "./views/gameView.js";
+import { restoreSession } from "./services/authService.js";
 
 let currentRoute = null;
 
-export function initApp() {
+export async function initApp() {
+
+  const { restored } = await restoreSession();
+  
+  if (!restored) {
+    setState({ route: "login" });
+  }
+  
   router.init();
 
   state$.subscribe((state) => {
