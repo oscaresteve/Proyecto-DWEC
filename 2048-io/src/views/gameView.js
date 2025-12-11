@@ -22,31 +22,55 @@ export function renderGameView(root) {
       </div>
     </div>
 
-    <div class="flex flex-col items-center justify-center w-2/4">
-      <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048 Adventure</h1>
-      <div id="game-board" class="board"></div>
-      <div class="mt-4 text-xl font-semibold text-gray-700">
-        Score: <span id="score">0</span>
-      </div>
-      <div class="mt-2 text-xl font-bold text-gray-700">
-        Max Score: <span id="max-score">0</span>
-      </div>
-      <div class="mt-2 text-lg font-semibold text-gray-700">
-        Nivel: <span id="level">1</span>
-      </div>
-      <div class="mt-1 text-lg font-semibold text-gray-700">
-        Objetivo: <span id="target">16</span>
-      </div>
-      <div class="mt-4 flex flex-col items-center">
-        <div id="game-over-container" class="mb-2"></div>
-        <button id="restart-game" class="px-4 py-2 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600">
-          Reiniciar Partida
-        </button>
-        <button id="restart-level" class="mt-2 px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">
-          Reiniciar Nivel
-        </button>
-      </div>
+    <div class="flex flex-col items-center justify-start w-2/4 px-4">
+
+  <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048 Adventure</h1>
+
+  <!-- HUD del nivel -->
+  <div class="w-full flex flex-col items-center mb-4">
+    <div class="px-6 py-3 bg-purple-600 text-white rounded-xl shadow-lg text-3xl font-bold">
+      Nivel <span id="level" class="ml-2">1</span>
     </div>
+  </div>
+
+  <!-- Objetivo representado como tile -->
+  <div class="mt-2 mb-6 flex flex-col items-center">
+    <p class="text-lg font-semibold text-gray-700 mb-2">Objetivo:</p>
+    <div class="targetBoard shadow-xl rounded-lg">
+      <div id="target-tile" class="tile tile-16">16</div>
+    </div>
+    
+  </div>
+
+  <!-- Tablero de juego -->
+  <div id="game-board" class="board shadow-xl rounded-lg"></div>
+
+  <!-- Score -->
+  <div class="mt-6 space-y-2 text-center">
+    <div class="text-xl font-semibold text-gray-700">
+      Score: <span id="score">0</span>
+    </div>
+    <div class="text-xl font-bold text-gray-700">
+      Max Score: <span id="max-score">0</span>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div class="mt-6 flex flex-col items-center gap-3 w-full">
+    <div id="game-over-container" class="text-red-600 text-xl font-bold"></div>
+
+    <button id="restart-game"
+      class="w-40 px-4 py-2 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600 transition">
+      Reiniciar partida
+    </button>
+
+    <button id="restart-level"
+      class="w-40 px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition">
+      Reiniciar nivel
+    </button>
+  </div>
+</div>
+
 
     <div class="w-1/4 ml-4">
       <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
@@ -59,7 +83,7 @@ export function renderGameView(root) {
   const score = root.querySelector("#score");
   const maxScore = root.querySelector("#max-score");
   const level = document.getElementById("level");
-  const target = document.getElementById("target");
+
   const gameOverContainer = root.querySelector("#game-over-container");
   const restartGameButton = root.querySelector("#restart-game");
   const restartLevelButton = root.querySelector("#restart-level");
@@ -68,6 +92,7 @@ export function renderGameView(root) {
   const nicknameInput = root.querySelector("#nickname-input");
   const updateNicknameBtn = root.querySelector("#update-nickname-btn");
   const nicknameMsg = root.querySelector("#nickname-msg");
+  const targetTile = document.getElementById("target-tile");
 
   function renderGameOverText() {
     gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
@@ -91,22 +116,22 @@ export function renderGameView(root) {
     );
   }
 
-async function updateRanking() {
-  const { success, data: ranking, error } = await fetchGlobalRanking(10);
+  async function updateRanking() {
+    const { success, data: ranking, error } = await fetchGlobalRanking(10);
 
-  if (!success) {
-    console.error("No se pudo actualizar el ranking:", error.message);
-    rankingList.innerHTML = `<li class="text-red-500">No se pudo cargar el ranking</li>`;
-    return;
-  }
+    if (!success) {
+      console.error("No se pudo actualizar el ranking:", error.message);
+      rankingList.innerHTML = `<li class="text-red-500">No se pudo cargar el ranking</li>`;
+      return;
+    }
 
-  const currentNickname = state$.value.user?.nickname;
+    const currentNickname = state$.value.user?.nickname;
 
-  rankingList.innerHTML = ranking
-    .map((user, index) => {
-      const isCurrent = user.nickname === currentNickname;
-      
-      return `
+    rankingList.innerHTML = ranking
+      .map((user, index) => {
+        const isCurrent = user.nickname === currentNickname;
+
+        return `
         <li class="flex justify-between py-1 px-2 rounded mb-1 ${
           isCurrent ? "bg-yellow-200 font-bold" : ""
         }">
@@ -114,9 +139,9 @@ async function updateRanking() {
           <span>${user.max_score}</span>
         </li>
       `;
-    })
-    .join("");
-}
+      })
+      .join("");
+  }
 
   if (!state$.value.user.game) {
     const prevUser = state$.value.user;
@@ -167,7 +192,11 @@ async function updateRanking() {
       score.textContent = game.score;
       maxScore.textContent = user.max_score ?? 0;
       level.textContent = game.level;
-      target.textContent = game.target;
+
+
+      targetTile.textContent = game.target;
+      targetTile.className = "tile";
+      targetTile.classList.add(`tile-${game.target}`);
 
       gameOver = isGameOver(game);
       renderGameOverText();
@@ -184,13 +213,10 @@ async function updateRanking() {
           user: {
             ...state.user,
             game: newLevelGame,
-          }
+          },
         });
-
-        alert("¡Nivel completado! Ahora estás en el nivel " + nextLevel);
         return;
       }
-
     });
   }
 
@@ -218,11 +244,11 @@ async function updateRanking() {
 
       nicknameMsg.textContent = "Nickname actualizado correctamente!";
       nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
-      setTimeout(() => nicknameMsg.textContent = "", 3000);
+      setTimeout(() => (nicknameMsg.textContent = ""), 3000);
     } else {
       nicknameMsg.textContent = "No se pudo actualizar el nickname";
       nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
-      setTimeout(() => nicknameMsg.textContent = "", 3000);
+      setTimeout(() => (nicknameMsg.textContent = ""), 3000);
     }
   });
 
@@ -240,11 +266,11 @@ async function updateRanking() {
         game: newGame,
       },
     });
-    
+
     gameOver = false;
   });
 
-    restartLevelButton.addEventListener("click", (e) => {
+  restartLevelButton.addEventListener("click", (e) => {
     e.preventDefault();
 
     const prevUser = state$.value.user;
@@ -258,7 +284,7 @@ async function updateRanking() {
         game: newGame,
       },
     });
-    
+
     gameOver = false;
   });
 

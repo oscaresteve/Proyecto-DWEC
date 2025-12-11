@@ -12,6 +12,16 @@
   position: relative;
 }
 
+.targetBoard {
+  display: grid;
+  grid-template-columns: repeat(1, 80px);
+  grid-template-rows: repeat(1, 80px);
+  gap: 8px;
+  background-color: #ccc;
+  padding: 8px;
+  border-radius: 8px;
+}
+
 /* tiles */
 .tile {
   display: flex;
