@@ -84,6 +84,7 @@ export async function uploadAvatar(file, email, token) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "x-upsert": true
         },
         body: formData,
       }
@@ -99,32 +100,7 @@ export async function uploadAvatar(file, email, token) {
       return { success: false, error: new Error(errorMsg) };
     }
 
-    const avatarUrl = `${SUPABASE_URL}/storage/v1/object/public/avatars/${filename}`;
-
-    const updateResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/users?email=eq.${email}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ avatar_url: avatarUrl }),
-      }
-    );
-
-    if (!updateResponse.ok) {
-      let errorMsg = "Error desconocido con Supabase";
-      try {
-        const errData = await updateResponse.json();
-        errorMsg = errData.error_description || errData.msg || errorMsg;
-      } catch {}
-      console.error("Supabase error:", errorMsg);
-      return { success: false, error: new Error(errorMsg) };
-    }
-
-    return { success: true, avatarUrl, error: null };
+    return { success: true, filename, error: null };
   } catch (err) {
     console.error("Supabase fetch error:", err);
     return {
@@ -133,3 +109,29 @@ export async function uploadAvatar(file, email, token) {
     };
   }
 }
+
+export async function fetchAvatar(filename, token) {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/sign/avatars/${filename}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error_description || errData.msg || "Error al generar signed URL");
+    }
+
+    const data = await response.json();
+    return { success: true, url: data.signedURL };
+  } catch (err) {
+    console.error("Supabase fetchAvatar error:", err);
+    return { success: false, error: err };
+  }
+}
+

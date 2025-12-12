@@ -4,7 +4,7 @@ import { saveGame } from "../services/gameService.js";
 import { fetchGlobalRanking } from "../services/rankingService.js";
 import { updateNickname } from "../services/userService.js";
 import { logout } from "../services/authService.js";
-import { uploadAvatar } from "../services/userService.js";
+import { uploadAvatar, fetchAvatar } from "../services/userService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -329,21 +329,26 @@ export function renderGameView(root) {
 
     const { email, token } = state$.value.user;
 
-    const result = await uploadAvatar(file, email, token);
+    const { success, filename } = await uploadAvatar(file, email, token);
 
-    if (result.success) {
-      const currentUser = state$.value.user;
+    if (success) {
+      const { success: urlSuccess, url } = await fetchAvatar(
+        filename,
+        token
+      );
+      if (urlSuccess) {
+        profileAvatar.src = url;
+        nicknameMsg.textContent = "Imagen subida correctamente!";
+        nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+        const currentUser = state$.value.user;
 
-      setState({
-        user: {
-          ...currentUser,
-          avatar_url: result.avatarUrl,
-        },
-      });
-
-      profileAvatar.src = result.avatarUrl;
-      nicknameMsg.textContent = "Imagen subida correctamente!";
-      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+        setState({
+          user: {
+            ...currentUser,
+            avatar_url: url,
+          },
+        });
+      }
     } else {
       nicknameMsg.textContent = "Error subiendo imagen";
       nicknameMsg.className = "text-red-500 text-sm text-center mt-1";

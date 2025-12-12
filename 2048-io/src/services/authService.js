@@ -60,7 +60,6 @@ export async function login(email, password) {
       nickname: user.nickname,
       max_score: user.max_score,
       game: user.game,
-      avatar_url: user.avatar_url,
     },
     route: "game",
   });
@@ -105,7 +104,6 @@ export async function ensureUserExists(email, token, nickname = "Player") {
         nickname,
         max_score: 0,
         game: null,
-        avatar_url: `${SUPABASE_URL}/storage/v1/object/public/avatars/default.jpg`,
       }),
     });
     console.log(`Usuario asegurado en Supabase: ${email}`);
@@ -135,7 +133,6 @@ export async function restoreSession() {
       nickname: user.nickname,
       max_score: user.max_score,
       game: user.game,
-      avatar_url: user.avatar_url,
     },
     route: "game",
   });
