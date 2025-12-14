@@ -39,8 +39,8 @@ export function renderGameView(root) {
     <!-- HUD -->
     <div class="flex gap-4 mb-4">
       <div class="px-4 py-2 bg-purple-600 text-white rounded-xl shadow text-lg font-bold">Nivel: <span id="level">1</span></div>
-      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Puntuación: <span id="score">0</span></div>
-      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Máxima puntuación: <span id="max-score">0</span></div>
+      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Puntuación: <span id="score" class="font-bold">0</span></div>
+      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Máxima puntuación: <span id="max-score" class="font-bold">0</span></div>
     </div>
 
     <!-- Objetivo -->
@@ -124,7 +124,7 @@ export function renderGameView(root) {
   }
 
   async function updateRanking() {
-    const { success, data: ranking, error } = await fetchGlobalRanking(10);
+    const { success, data: ranking, error } = await fetchGlobalRanking();
 
     if (!success) {
       console.error("No se pudo actualizar el ranking:", error.message);
