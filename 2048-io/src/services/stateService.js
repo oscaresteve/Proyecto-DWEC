@@ -5,6 +5,7 @@ const initialState = {
     email: null,
     token: null,
     nickname: null,
+    avatar_url: null,
     max_score: 0,
     game: null,
   },

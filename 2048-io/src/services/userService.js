@@ -25,7 +25,13 @@ export async function fetchUser(email, token) {
     }
 
     const data = await response.json();
-    return { success: true, data: data[0] || null, error: null };
+    const avatar_url = await getAvatar(email, token);
+
+    if (!data[0]) {
+      return { success: false, data: null, error: "No user data found" };
+    }
+
+    return { success: true, data: { ...data[0], avatar_url }, error: null };
   } catch (err) {
     console.error("Supabase fetch error:", err);
     return {
@@ -71,36 +77,41 @@ export async function updateNickname(email, token, newNickname) {
   }
 }
 
-export async function uploadAvatar(file, email, token) {
+export async function uploadAvatar(formData, email, token) {
   try {
-    const formData = new FormData();
-    formData.append("file", file);
+    const file = formData.get("avatar");
+    if (!file) {
+      throw new Error('No se encontró el archivo "image" en el FormData');
+    }
 
-    const filename = `${email}.jpg`;
+    const encodedEmail = email.replace(/@/g, "").replace(/\./g, "");
+    const filePath = `avatars/${encodedEmail}/profile.png`;
 
-    const uploadResponse = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/avatars/${filename}`,
+    const response = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/${filePath}`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "x-upsert": true
+          apikey: SUPABASE_ANON_KEY,
+          "Content-Type": file.type,
+          "x-upsert": "true",
         },
-        body: formData,
+        body: file,
       }
     );
 
-    if (!uploadResponse.ok) {
+    if (!response.ok) {
       let errorMsg = "Error desconocido con Supabase";
       try {
-        const errData = await uploadResponse.json();
+        const errData = await response.json();
         errorMsg = errData.error_description || errData.msg || errorMsg;
       } catch {}
       console.error("Supabase error:", errorMsg);
       return { success: false, error: new Error(errorMsg) };
     }
 
-    return { success: true, filename, error: null };
+    return { success: true, error: null };
   } catch (err) {
     console.error("Supabase fetch error:", err);
     return {
@@ -110,28 +121,28 @@ export async function uploadAvatar(file, email, token) {
   }
 }
 
-export async function fetchAvatar(filename, token) {
-  try {
-    const response = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/sign/avatars/${filename}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      }
-    );
+export async function getAvatar(email, token, expiresIn = 3000) {
+  const encodedEmail = email.replace(/@/g, "").replace(/\./g, "");
+  const filePath = `avatars/${encodedEmail}/profile.png`;
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error_description || errData.msg || "Error al generar signed URL");
+  const response = await fetch(
+    `${SUPABASE_URL}/storage/v1/object/sign/${filePath}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ expiresIn }),
     }
+  );
 
-    const data = await response.json();
-    return { success: true, url: data.signedURL };
-  } catch (err) {
-    console.error("Supabase fetchAvatar error:", err);
-    return { success: false, error: err };
+  if (!response.ok) {
+    return "/src/assets/default-avatar.jpg";
   }
-}
 
+  const data = await response.json();
+  const url = `${SUPABASE_URL}/storage/v1${data.signedURL}`;
+  return url;
+}

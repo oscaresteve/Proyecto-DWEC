@@ -1,5 +1,5 @@
 import { setState } from "./stateService.js";
-import { fetchUser } from "./userService.js";
+import { fetchUser, getAvatar } from "./userService.js";
 
 const SUPABASE_URL = "https://ypfxbsnqfpdkwzrhmkoa.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -58,6 +58,7 @@ export async function login(email, password) {
       email: user.email,
       token,
       nickname: user.nickname,
+      avatar_url: user.avatar_url,
       max_score: user.max_score,
       game: user.game,
     },
@@ -131,6 +132,7 @@ export async function restoreSession() {
       email: user.email,
       token,
       nickname: user.nickname,
+      avatar_url: user.avatar_url,
       max_score: user.max_score,
       game: user.game,
     },

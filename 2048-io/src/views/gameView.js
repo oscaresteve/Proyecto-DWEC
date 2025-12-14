@@ -4,7 +4,7 @@ import { saveGame } from "../services/gameService.js";
 import { fetchGlobalRanking } from "../services/rankingService.js";
 import { updateNickname } from "../services/userService.js";
 import { logout } from "../services/authService.js";
-import { uploadAvatar, fetchAvatar } from "../services/userService.js";
+import { uploadAvatar, getAvatar } from "../services/userService.js";
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -232,7 +232,7 @@ export function renderGameView(root) {
   if (state$.value.user) {
     userEmailSpan.textContent = state$.value.user.email;
     nicknameInput.value = state$.value.user.nickname ?? "";
-    profileAvatar.src = state$.value.user.avatar_url || "";
+    profileAvatar.src = state$.value.user.avatar_url || null;
   }
 
   updateNicknameBtn.addEventListener("click", async () => {
@@ -320,8 +320,9 @@ export function renderGameView(root) {
   avatarForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const file = avatarForm.avatar.files[0];
-    if (!file) {
+    const formData = new FormData(e.target);
+
+    if (!formData) {
       nicknameMsg.textContent = "Selecciona una imagen";
       nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
       return;
@@ -329,26 +330,22 @@ export function renderGameView(root) {
 
     const { email, token } = state$.value.user;
 
-    const { success, filename } = await uploadAvatar(file, email, token);
+    const { success } = await uploadAvatar(formData, email, token);
 
     if (success) {
-      const { success: urlSuccess, url } = await fetchAvatar(
-        filename,
-        token
-      );
-      if (urlSuccess) {
-        profileAvatar.src = url;
-        nicknameMsg.textContent = "Imagen subida correctamente!";
-        nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
-        const currentUser = state$.value.user;
+      const avatar_url = await getAvatar(email, token);
 
-        setState({
-          user: {
-            ...currentUser,
-            avatar_url: url,
-          },
-        });
-      }
+      profileAvatar.src = url;
+      nicknameMsg.textContent = "Imagen subida correctamente!";
+      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+      const currentUser = state$.value.user;
+
+      setState({
+        user: {
+          ...currentUser,
+          avatar_url: url,
+        },
+      });
     } else {
       nicknameMsg.textContent = "Error subiendo imagen";
       nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
