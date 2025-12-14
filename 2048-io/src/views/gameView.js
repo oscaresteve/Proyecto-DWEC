@@ -12,80 +12,76 @@ let gameOver = false;
 
 export function renderGameView(root) {
   root.innerHTML = `
-  <div class="flex flex-row min-h-screen bg-gray-100 p-4">
-    <div class="w-1/4 mr-4 bg-white p-4 rounded shadow">
-      <h2 class="text-2xl font-bold mb-2">Mi Perfil</h2>
-      <div class="mb-2"><strong>Email:</strong> <span id="user-email"></span></div>
-      <div class="mb-4">
-        <label for="nickname-input" class="block font-semibold mb-1">Nickname:</label>
-        <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1" />
-        <button id="update-nickname-btn" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Actualizar</button>
-        <p id="nickname-msg"></p>
-        <form id="avatarForm" class="mt-3 flex flex-col gap-2">
-          <input class="border rounded px-2 py-1" type="file" name="avatar" accept="image/*" />
-          <button class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Subir foto</button>
-        </form>
-        <img id="profileAvatar" class="mt-3 rounded shadow" src="" alt="Avatar" width="100" />
-        <button id="logout-btn" class="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Cerrar sesión</button>
+  <div class="flex flex-row min-h-screen bg-gray-50 p-4 gap-4">
+
+  <!-- Perfil -->
+  <div class="w-1/4 bg-white p-4 rounded-xl shadow-md flex flex-col items-center gap-4">
+    <img id="profileAvatar" class="w-24 h-24 rounded-full shadow-lg" src="" alt="Avatar">
+    <div class="text-center">
+      <p class="font-semibold text-gray-700"><span id="user-email"></span></p>
+      <label for="nickname-input" class="block font-semibold mt-2">Nickname</label>
+      <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1 mt-1">
+      <button id="update-nickname-btn" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Actualizar</button>
+      <p id="nickname-msg" class="text-sm mt-1"></p>
+    </div>
+    <form id="avatarForm" class="flex flex-col gap-2 w-full">
+      <input class="border rounded px-2 py-1" type="file" name="avatar" accept="image/*" />
+      <button class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Subir foto</button>
+    </form>
+    <button id="logout-btn" class="mt-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full">Cerrar sesión</button>
+  </div>
+
+  <!-- Juego -->
+  <div class="flex-1 flex flex-col items-center">
+    <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048 Adventure</h1>
+
+    <!-- HUD -->
+    <div class="flex gap-4 mb-4">
+      <div class="px-4 py-2 bg-purple-600 text-white rounded-xl shadow text-lg font-bold">Nivel: <span id="level">1</span></div>
+      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Puntuación: <span id="score">0</span></div>
+      <div class="px-4 py-2 bg-gray-100 rounded-xl shadow text-gray-700 font-semibold">Máxima puntuación: <span id="max-score">0</span></div>
+    </div>
+
+    <!-- Objetivo -->
+    <div class="mb-4 flex flex-col items-center">
+
+      <div class="targetBoard shadow-xl rounded-lg p-2">
+        <div id="target-tile" class="tile tile-16">16</div>
       </div>
     </div>
 
-    <div class="flex flex-col items-center justify-start w-2/4 px-4">
+    <!-- Tablero -->
+    <div id="game-board" class="board shadow-xl rounded-lg p-2"></div>
 
-  <h1 class="text-4xl font-extrabold mb-4 text-gray-800">2048 Adventure</h1>
-
-  <!-- HUD del nivel -->
-  <div class="w-full flex flex-col items-center mb-4">
-    <div class="px-6 py-3 bg-purple-600 text-white rounded-xl shadow-lg text-3xl font-bold">
-      Nivel <span id="level" class="ml-2">1</span>
+    <!-- Controles -->
+    <div class="mt-6 flex gap-4">
+      <button id="restart-game" class="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600 transition">Reiniciar partida</button>
+      <button id="restart-level" class="px-4 py-2 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600 transition">Reiniciar nivel</button>
     </div>
+
+    <div id="game-over-container" class="text-red-600 text-xl font-bold mt-3"></div>
+
+    <!-- Reglas -->
+    <div class="mt-auto mb-4 w-full flex justify-center">
+      <p class="text-l text-gray-500 text-center leading-relaxed max-w-xl">
+        Usa las <span class="font-semibold">flechas del teclado</span> para mover todas las fichas en una dirección.
+        Cuando dos fichas con el mismo valor chocan, se <span class="font-semibold">fusionan en una sola</span> sumando puntos.
+        Alcanza la ficha <span class="font-semibold">objetivo</span> para <span class="font-semibold">avanzar de nivel</span>.
+        Cuantos más niveles superes y más fusiones hagas, <span class="font-semibold">mayor será tu puntuación</span>.
+      </p>
+    </div>
+
   </div>
 
-  <!-- Objetivo representado como tile -->
-  <div class="mt-2 mb-6 flex flex-col items-center">
-    <p class="text-lg font-semibold text-gray-700 mb-2">Objetivo:</p>
-    <div class="targetBoard shadow-xl rounded-lg">
-      <div id="target-tile" class="tile tile-16">16</div>
-    </div>
-    
+  <!-- Ranking -->
+  <div class="w-1/4 bg-white p-4 rounded-xl shadow-md flex flex-col gap-2">
+    <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
+    <ul id="ranking-list" class="flex flex-col gap-1 overflow-y-auto max-h-[70vh]"></ul>
   </div>
 
-  <!-- Tablero de juego -->
-  <div id="game-board" class="board shadow-xl rounded-lg"></div>
-
-  <!-- Score -->
-  <div class="mt-6 space-y-2 text-center">
-    <div class="text-xl font-semibold text-gray-700">
-      Score: <span id="score">0</span>
-    </div>
-    <div class="text-xl font-bold text-gray-700">
-      Max Score: <span id="max-score">0</span>
-    </div>
-  </div>
-
-  <!-- Controles -->
-  <div class="mt-6 flex flex-col items-center gap-3 w-full">
-    <div id="game-over-container" class="text-red-600 text-xl font-bold"></div>
-
-    <button id="restart-game"
-      class="w-40 px-4 py-2 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600 transition">
-      Reiniciar partida
-    </button>
-
-    <button id="restart-level"
-      class="w-40 px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition">
-      Reiniciar nivel
-    </button>
-  </div>
 </div>
 
-
-    <div class="w-1/4 ml-4">
-      <h2 class="text-2xl font-bold mb-2">Ranking Global</h2>
-      <ul id="ranking-list" class="bg-white p-2 rounded shadow"></ul>
-    </div>
-  </div>
-`;
+  `;
 
   const gameBoard = root.querySelector("#game-board");
   const score = root.querySelector("#score");
@@ -105,7 +101,7 @@ export function renderGameView(root) {
   const profileAvatar = root.querySelector("#profileAvatar");
 
   function renderGameOverText() {
-    gameOverContainer.textContent = gameOver ? "¡Game Over!" : "";
+    gameOverContainer.textContent = gameOver ? "¡No puedes hacer mas movimientos!" : "";
   }
 
   function renderBoard(gameBoard, grid) {
