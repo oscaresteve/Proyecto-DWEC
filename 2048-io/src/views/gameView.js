@@ -335,7 +335,7 @@ export function renderGameView(root) {
     if (success) {
       const avatar_url = await getAvatar(email, token);
 
-      profileAvatar.src = url;
+      profileAvatar.src = avatar_url;
       nicknameMsg.textContent = "Imagen subida correctamente!";
       nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
       const currentUser = state$.value.user;
@@ -343,7 +343,7 @@ export function renderGameView(root) {
       setState({
         user: {
           ...currentUser,
-          avatar_url: url,
+          avatar_url,
         },
       });
     } else {
