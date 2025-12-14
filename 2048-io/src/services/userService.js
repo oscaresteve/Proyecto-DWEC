@@ -139,7 +139,7 @@ export async function getAvatar(email, token, expiresIn = 3000) {
   );
 
   if (!response.ok) {
-    return "/src/assets/default-avatar.jpg";
+    return null;
   }
 
   const data = await response.json();

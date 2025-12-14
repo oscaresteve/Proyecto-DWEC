@@ -5,6 +5,7 @@ import { fetchGlobalRanking } from "../services/rankingService.js";
 import { updateNickname } from "../services/userService.js";
 import { logout } from "../services/authService.js";
 import { uploadAvatar, getAvatar } from "../services/userService.js";
+import defaultAvatar from "../assets/default-avatar.jpg"
 
 let gameSubscription = null;
 let keyListenerAdded = false;
@@ -22,12 +23,12 @@ export function renderGameView(root) {
       <label for="nickname-input" class="block font-semibold mt-2">Nickname</label>
       <input id="nickname-input" type="text" class="w-full border rounded px-2 py-1 mt-1">
       <button id="update-nickname-btn" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Actualizar</button>
-      <p id="nickname-msg" class="text-sm mt-1"></p>
     </div>
     <form id="avatarForm" class="flex flex-col gap-2 w-full">
       <input class="border rounded px-2 py-1" type="file" name="avatar" accept="image/*" />
       <button class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Subir foto</button>
     </form>
+    <p id="text-msg" class="text-l mt-1"></p>
     <button id="logout-btn" class="mt-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full">Cerrar sesión</button>
   </div>
 
@@ -94,7 +95,7 @@ export function renderGameView(root) {
   const userEmailSpan = root.querySelector("#user-email");
   const nicknameInput = root.querySelector("#nickname-input");
   const updateNicknameBtn = root.querySelector("#update-nickname-btn");
-  const nicknameMsg = root.querySelector("#nickname-msg");
+  const textMsg = root.querySelector("#text-msg");
   const targetTile = document.getElementById("target-tile");
   const logoutBtn = root.querySelector("#logout-btn");
   const avatarForm = root.querySelector("#avatarForm");
@@ -228,7 +229,7 @@ export function renderGameView(root) {
   if (state$.value.user) {
     userEmailSpan.textContent = state$.value.user.email;
     nicknameInput.value = state$.value.user.nickname ?? "";
-    profileAvatar.src = state$.value.user.avatar_url || null;
+    profileAvatar.src = state$.value.user.avatar_url || defaultAvatar;
   }
 
   updateNicknameBtn.addEventListener("click", async () => {
@@ -253,13 +254,13 @@ export function renderGameView(root) {
 
       updateRanking();
 
-      nicknameMsg.textContent = "Nickname actualizado correctamente!";
-      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
-      setTimeout(() => (nicknameMsg.textContent = ""), 3000);
+      textMsg.textContent = "Nickname actualizado correctamente!";
+      textMsg.className = "text-green-500 text-l text-center mt-1";
+      setTimeout(() => (textMsg.textContent = ""), 3000);
     } else {
-      nicknameMsg.textContent = "No se pudo actualizar el nickname";
-      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
-      setTimeout(() => (nicknameMsg.textContent = ""), 3000);
+      textMsg.textContent = "No se pudo actualizar el nickname";
+      textMsg.className = "text-red-500 text-l text-center mt-1";
+      setTimeout(() => (textMsg.textContent = ""), 3000);
     }
   });
 
@@ -317,10 +318,13 @@ export function renderGameView(root) {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+    
+    const file = formData.get("avatar");
 
-    if (!formData) {
-      nicknameMsg.textContent = "Selecciona una imagen";
-      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
+    if (!file || file.size === 0) {
+      textMsg.textContent = "Selecciona una imagen";
+      textMsg.className = "text-red-500 text-l text-center mt-1";
+      setTimeout(() => (textMsg.textContent = ""), 3000);
       return;
     }
 
@@ -331,9 +335,10 @@ export function renderGameView(root) {
     if (success) {
       const avatar_url = await getAvatar(email, token);
 
-      profileAvatar.src = avatar_url;
-      nicknameMsg.textContent = "Imagen subida correctamente!";
-      nicknameMsg.className = "text-green-500 text-sm text-center mt-1";
+      profileAvatar.src = avatar_url || defaultAvatar;
+      textMsg.textContent = "Imagen subida correctamente!";
+      textMsg.className = "text-green-500 text-l text-center mt-1";
+      setTimeout(() => (textMsg.textContent = ""), 3000);
       const currentUser = state$.value.user;
 
       setState({
@@ -342,12 +347,14 @@ export function renderGameView(root) {
           avatar_url,
         },
       });
+
+      avatarForm.reset();
     } else {
-      nicknameMsg.textContent = "Error subiendo imagen";
-      nicknameMsg.className = "text-red-500 text-sm text-center mt-1";
+      textMsg.textContent = "Error subiendo imagen";
+      textMsg.className = "text-red-500 text-l text-center mt-1";
+      setTimeout(() => (textMsg.textContent = ""), 3000);
     }
 
-    setTimeout(() => (nicknameMsg.textContent = ""), 3000);
   });
 
   updateRanking();
